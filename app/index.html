@@ -1414,6 +1414,7 @@ $('volgendemaand').addEventListener('click', function(){ wisselMaand(1); });
 $('maandlabel').addEventListener('click', function(){
   gekozenMaand = maandSleutel(new Date());
   gekozenDag = null;
+  zetDatumveld();
   tekenAlles();
 });
 function wisselMaand(stappen){
@@ -1616,6 +1617,29 @@ function toonFout(rijId, veldId, tekst){
 }
 function wisFout(rijId){ $(rijId).classList.remove('mis'); }
 
+/* De beste gok voor het datumveld, gegeven waar je nu naar kijkt. Heb je een
+   dag in de kalender aangetikt, dan die dag. Sta je in de huidige maand, dan
+   vandaag. Kijk je naar een andere maand, dan de eerste daarvan. */
+function standaardDatum(){
+  if(gekozenDag && gekozenDag.slice(0,7) === gekozenMaand) return gekozenDag;
+  var nu = vandaagSleutel();
+  return nu.slice(0,7) === gekozenMaand ? nu : gekozenMaand + '-01';
+}
+
+/* Blader je naar september terwijl hier 25/08 blijft staan, dan landt je
+   uitgave in augustus terwijl je naar september kijkt — en dat zie je pas
+   weken later. Daarom lopen deze velden mee met de maand.
+
+   Beide formulieren hebben dezelfde valkuil, dus staan ze hier bij elkaar:
+   raakt er ooit een derde datumveld bij, dan hoort het hier ook. */
+function zetDatumveld(){
+  var d = toonDatum(standaardDatum());
+  /* Het werkformulier kent geen wijzig-stand, dat veld mag altijd mee. */
+  $('klusDatum').value = d;
+  /* Wijzig je een bestaande uitgave, dan houdt die haar eigen datum. */
+  if(!bewerktId) $('uitDatum').value = d;
+}
+
 function stopBewerken(){
   bewerktId = null;
   $('bewerkbalk').classList.remove('aan');
@@ -1625,6 +1649,7 @@ function stopBewerken(){
   $('uitBedrag').value = '';
   zetUitMunt('GBP');
   wisFout('uitFoutrij');
+  zetDatumveld();
 }
 
 $('bewerkstop').addEventListener('click', function(){ stopBewerken(); });
@@ -1758,6 +1783,9 @@ document.addEventListener('click', function(e){
   var dag = e.target.closest('.dag');
   if(dag && dag.dataset.dag){
     gekozenDag = gekozenDag === dag.dataset.dag ? null : dag.dataset.dag;
+    /* Tik je 12 september aan en ga je daarna een uitgave invoeren, dan is dát
+       de datum die je bedoelt — niet de eerste van de maand. */
+    zetDatumveld();
     tekenAlles();
     if(gekozenDag) $('dagdetail').scrollIntoView({behavior:'smooth', block:'nearest'});
   }
@@ -1863,8 +1891,7 @@ function vulCategorieKeuze(){
 
 st = laad();
 gekozenMaand = maandSleutel(new Date());
-$('uitDatum').value = toonDatum(vandaagSleutel());
-$('klusDatum').value = toonDatum(vandaagSleutel());
+zetDatumveld();
 vulCategorieKeuze();
 tekenAlles();
 
