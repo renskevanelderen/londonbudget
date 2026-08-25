@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Het app-icoon: dezelfde zonsondergang-gradient als de hero bovenin de
+       app, met de skyline die daar ook al staat. iOS rondt de hoeken zelf af,
+       dus dit is met opzet een vierkant zonder eigen radius. -->
+  <defs>
+    <linearGradient id="lucht" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#6B2D5C"/>
+      <stop offset="42%"  stop-color="#C42A66"/>
+      <stop offset="78%"  stop-color="#FF5A3C"/>
+      <stop offset="100%" stop-color="#FFA92B"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#lucht)"/>
+
+  <!-- De zon, net als in de app rechtsboven. Hoog genoeg dat het pondteken er
+       niet doorheen loopt: op icoongrootte wordt overlap meteen modderig. -->
+  <circle cx="404" cy="98" r="54" fill="#FFE08A" opacity=".92"/>
+
+  <!-- Het pondteken is waar het icoon om draait: dit is een geldapp. In het
+       limoengroen dat door de hele app als accentkleur terugkomt.
+
+       Met opzet een <path> en geen <text>: welk lettertype een renderer pakt
+       verschilt per systeem, en een icoon dat er elders anders uitziet is geen
+       icoon. Dit is dezelfde vorm, maar dan vastgelegd. -->
+  <!-- De transform zet het teken op maat: kleiner en hoger, zodat het vrij
+       staat tussen de zon en de daken. Raakt het de skyline, dan lopen twee
+       vormen in dezelfde kleurzone door elkaar en wordt het een vlek. -->
+  <path fill="#D8F34B" transform="translate(258,206) scale(0.70) translate(-266,-260)"
+        d="M164 344v-42h26q-13-20-13-45 0-42 29-68t74-26q40 0
+    65 20t25 52h-52q0-16-11-25t-29-9q-21 0-33 14t-12 39q0 27 15 48h72v42h-58q1
+    6 1 12 0 24-14 43h133v46H150v-46h13q22-15 22-42 0-7-2-13z"/>
+
+  <!-- Silhouet onderlangs: London Eye, Big Ben, het Parlement, de Shard en
+       de Gherkin — dezelfde vormen als de skyline in de hero. -->
+  <g fill="#241423" opacity=".55">
+    <rect x="0" y="436" width="512" height="76"/>
+    <circle cx="58" cy="404" r="34" fill="none" stroke="#241423" stroke-width="7"/>
+    <rect x="55" y="404" width="7" height="42"/>
+    <rect x="122" y="372" width="27" height="74"/>
+    <rect x="118" y="372" width="35" height="8"/>
+    <path d="M135 340l15 30h-30z"/>
+    <circle cx="135" cy="398" r="8" fill="#FFF1E4"/>
+    <rect x="166" y="404" width="70" height="42"/>
+    <rect x="176" y="392" width="8" height="12"/>
+    <rect x="196" y="388" width="8" height="16"/>
+    <rect x="216" y="392" width="8" height="12"/>
+    <path d="M300 446l16-118 16 118z"/>
+    <path d="M370 446c-9-32-9-65 11-88 20 23 20 56 11 88z"/>
+    <rect x="430" y="398" width="50" height="48"/>
+    <rect x="438" y="386" width="8" height="12"/>
+    <rect x="458" y="386" width="8" height="12"/>
+  </g>
+</svg>

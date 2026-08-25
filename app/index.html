@@ -1,0 +1,1841 @@
+<!-- Samengesteld door tools/bouw.py - bewerk de .part-bestanden. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#241423">
+<title>London Budget</title>
+<!-- Zonder deze regel maakt iOS bij "Add to Home Screen" zelf een miniatuur
+     van het dashboard als icoon: een onleesbaar propje. De 180px is wat iOS
+     pakt; de manifest regelt hetzelfde op Android. -->
+<link rel="apple-touch-icon" href="icoon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icoon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="London Budget">
+<style>
+@font-face{font-family:"Bricolage";font-weight:200 800;font-stretch:75% 100%;font-display:swap;
+  src:url("fonts/bricolage-latin.woff2") format("woff2")}
+@font-face{font-family:"Fraunces";font-weight:300 900;font-display:swap;
+  src:url("fonts/fraunces-latin.woff2") format("woff2")}
+
+:root{
+  --inkt:#241423;
+  --zacht:#8A7382;
+  --creme:#FFF6EC;
+  --kaart:#FFFDFA;
+  --rand:#F0E2D6;
+  --schaduw:0 6px 18px rgba(58,26,50,.07);
+
+  --huur:#E4572E;
+  --bood:#17A398;
+  --leuk:#FF2E7E;
+  --kled:#9B5DE5;
+  --gwl:#F4A300;
+  --gym:#8FB300;
+  --swap:#E8B200;
+  --wifi:#5FCB6B;
+  --rnd:#7A4E7E;
+  --ihs:#E5798C;
+  --over:#FF1F4B;
+  --lime:#D8F34B;
+
+  --balk:64px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;background:#EFE6DC;color:var(--inkt);
+  font:15px/1.45 "Bricolage",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:flex;justify-content:center;align-items:flex-start;overflow-x:hidden;
+}
+
+/* Het telefoonvenster. Op een echte iPhone vult .app het scherm;
+   op een breed scherm blijft hij even smal, zodat het ontwerp niet liegt. */
+.app{
+  width:100%;max-width:420px;min-height:100vh;position:relative;
+  background:var(--creme);
+  background-image:
+    radial-gradient(340px 260px at 6% 0%,#FFD9C2 0%,transparent 64%),
+    radial-gradient(320px 240px at 98% 4%,#F3D9FF 0%,transparent 62%),
+    radial-gradient(300px 240px at 50% 100%,#EAF6C0 0%,transparent 62%);
+  background-attachment:fixed;
+  padding-bottom:calc(var(--balk) + 26px + env(safe-area-inset-bottom));
+}
+.app::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:60;opacity:.14;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+}
+h1,h2,h3,.getal{font-family:"Bricolage";font-stretch:88%;letter-spacing:-.025em}
+
+.lint{background:var(--inkt);color:var(--lime);font-size:9.5px;letter-spacing:.12em;text-align:center;
+  padding:6px 10px;text-transform:uppercase;font-weight:700}
+
+header{padding:16px 16px 4px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{font-size:22px;margin:0;font-weight:800}
+.maandknop{background:var(--inkt);color:var(--lime);border:0;border-radius:999px;padding:8px 14px;
+  font:inherit;font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+.maandknop svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+
+main{padding:8px 16px 0}
+.paneel{display:none}
+.paneel.actief{display:block}
+
+.kaart{background:var(--kaart);border:1.5px solid var(--rand);border-radius:20px;
+  box-shadow:var(--schaduw);padding:16px 16px}
+.kaart+.kaart{margin-top:12px}
+.kaart h2{font-size:16px;margin:0 0 2px;font-weight:800}
+.kaart .sub{font-size:12px;color:var(--zacht);margin:0 0 14px;font-weight:500;line-height:1.45}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:18px 18px 0;color:#fff;
+  background:linear-gradient(150deg,#6B2D5C 0%,#C42A66 42%,#FF5A3C 78%,#FFA92B 100%);
+  min-height:212px;margin-bottom:12px}
+.hero .zon{position:absolute;right:22px;top:18px;width:52px;height:52px;border-radius:50%;
+  background:#FFE08A;opacity:.9}
+.hero .kop{position:relative;z-index:2}
+.hero .label{font-family:"Fraunces";font-style:italic;font-size:14px;opacity:.95}
+.hero .bedrag{font-size:44px;font-weight:800;line-height:1;margin:4px 0 6px;font-stretch:85%}
+.hero .klein{font-size:12px;opacity:.92;font-weight:500;max-width:190px;line-height:1.4}
+.hero svg.skyline{position:absolute;left:0;right:0;bottom:0;width:100%;height:104px;display:block}
+.hero .ring{position:absolute;right:16px;bottom:20px;z-index:2}
+
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.stat{background:var(--kaart);border:1.5px solid var(--rand);border-radius:16px;padding:11px 12px;
+  box-shadow:var(--schaduw);position:relative;overflow:hidden}
+.stat .k{font-size:9.5px;color:var(--zacht);font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+.stat .v{font-size:19px;font-weight:800;margin-top:1px;font-stretch:86%}
+.stat .vlek{position:absolute;right:-14px;top:-14px;width:44px;height:44px;border-radius:50%;opacity:.16}
+
+/* ---------- velden ---------- */
+label.veld span{display:block;font-size:10px;color:var(--zacht);margin-bottom:5px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em}
+input,select,textarea{
+  width:100%;background:#FFF1E4;border:1.5px solid #F2DCC8;border-radius:13px;
+  padding:11px 12px;font:inherit;font-size:15px;font-weight:700;color:var(--inkt);
+  -webkit-appearance:none;appearance:none}
+input::placeholder{color:#C7B0A0;font-weight:500}
+input:focus,select:focus{outline:none;border-color:var(--leuk);background:#fff}
+.tweekolom{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.veldrij{margin-bottom:10px}
+.knop{width:100%;background:var(--inkt);color:var(--lime);border:0;border-radius:14px;
+  padding:14px;font:inherit;font-weight:800;font-size:15px}
+
+/* ---------- inkomsten ---------- */
+.bron{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1.5px solid #F6EAE0}
+.bron .ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:0 0 34px}
+.bron .ic svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.bron .tekst{flex:1;min-width:0}
+.bron .naam{font-size:14px;font-weight:800;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.bron .looptijd{font-size:11.5px;color:var(--zacht);font-weight:600;margin-top:1px}
+.bron .geld{text-align:right;flex:0 0 auto}
+.bron .pond{font-size:15px;font-weight:800;font-stretch:86%}
+.bron .euro{font-size:11px;color:var(--zacht);font-weight:600;margin-top:1px}
+.bron.uit{opacity:.5}
+.bron.uit .pond{font-size:11px;background:#EFE3EA;color:#9C8794;border-radius:999px;padding:3px 9px;
+  font-weight:800;display:inline-block}
+.badge-vraag{background:var(--lime);color:var(--inkt);font-size:9.5px;font-weight:800;border-radius:999px;
+  padding:2px 8px;letter-spacing:.02em}
+
+/* Werkinkomsten wisselen per maand, dus die krijgen een eigen logboekje
+   in plaats van één vast bedrag zoals de andere bronnen. */
+.werkblok{border-bottom:0}
+.werkblok>summary{list-style:none}
+.werkblok>summary::-webkit-details-marker{display:none}
+.werkblok>summary .bron{border-bottom:0}
+.werkblok .tik{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;
+  color:var(--rnd);margin-top:3px}
+.werkblok .tik svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round;transition:.15s}
+.werkblok[open] .tik svg{transform:rotate(180deg)}
+.werkbinnen{background:#F8F2F9;border:1.5px solid #EBDFEC;border-radius:16px;padding:13px;margin:2px 0 13px}
+.klus{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1.5px solid #EBDFEC}
+.klus:last-of-type{border-bottom:0}
+.klus .tekst{flex:1;min-width:0}
+.klus .wie{font-size:13.5px;font-weight:800}
+.klus .wanneer{font-size:11px;color:var(--zacht);font-weight:600;margin-top:1px}
+.klus .op{font-size:14px;font-weight:800;font-stretch:86%}
+.klus.voorbeeld{opacity:.55}
+.werkleeg{text-align:center;padding:14px 6px 16px}
+.werkleeg .groot{font-size:13.5px;font-weight:800}
+.werkleeg .klein{font-size:11.5px;color:var(--zacht);font-weight:600;margin-top:3px}
+.werktotaal{display:flex;justify-content:space-between;align-items:center;margin-top:11px;
+  padding-top:11px;border-top:1.5px solid #EBDFEC;font-size:13px;font-weight:800}
+.werktotaal b{font-size:16px;font-stretch:86%}
+.totaalrij{background:var(--inkt);color:#fff;border-radius:14px;padding:12px 14px;margin-top:12px;
+  display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:14px}
+.totaalrij b{font-size:17px;font-stretch:86%}
+.voetnoot{font-size:11.5px;color:var(--zacht);font-weight:500;margin:12px 0 0;line-height:1.55}
+
+/* ---------- balken ---------- */
+.gl{display:flex;gap:12px;font-size:11px;color:var(--zacht);font-weight:700;margin-bottom:14px;flex-wrap:wrap}
+.gl i{display:inline-block;width:18px;height:9px;border-radius:999px;margin-right:6px;vertical-align:0}
+.cat{margin-bottom:14px}
+.cat:last-child{margin-bottom:0}
+.catkop{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.catkop .ic{width:26px;height:26px;border-radius:9px;display:grid;place-items:center;flex:0 0 26px}
+.catkop .ic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.catkop .naam{font-size:13px;font-weight:800;flex:1;min-width:0}
+.catkop .cijfers{font-size:11.5px;color:var(--zacht);font-weight:700;white-space:nowrap}
+.catkop .cijfers b{color:var(--inkt);font-size:13.5px;font-weight:800;font-stretch:86%}
+.baan{position:relative;height:16px;border-radius:999px;overflow:hidden}
+.baan i{position:absolute;left:0;top:0;bottom:0;border-radius:999px}
+.baan.overschreden{background:#FFD9E1}
+.baan.overschreden i{background:repeating-linear-gradient(118deg,var(--over),var(--over) 8px,#FF6685 8px,#FF6685 16px)}
+.badge-over{background:var(--over);color:#fff;font-size:9.5px;font-weight:800;border-radius:999px;
+  padding:2px 8px;display:inline-block;margin-top:5px}
+.cat.rood .catkop .cijfers b{color:var(--over)}
+
+/* ---------- uitgaven ---------- */
+.tip{background:var(--kaart);border:1.5px solid var(--rand);border-radius:16px;padding:11px 13px;
+  margin-bottom:12px;font-size:12.5px;color:#6E5B69;box-shadow:var(--schaduw);display:flex;gap:10px;
+  align-items:center;font-weight:500;line-height:1.4}
+.tip b{color:var(--inkt);font-weight:800}
+.tip svg{flex:0 0 26px;width:26px;height:26px}
+
+details.invoer{background:var(--kaart);border:1.5px solid var(--rand);border-radius:20px;
+  box-shadow:var(--schaduw);margin-bottom:12px;overflow:hidden}
+details.invoer summary{list-style:none;padding:14px 16px;display:flex;align-items:center;gap:11px;
+  font-weight:800;font-size:14.5px;cursor:pointer}
+details.invoer summary::-webkit-details-marker{display:none}
+details.invoer summary .plus{width:30px;height:30px;border-radius:10px;background:var(--inkt);color:var(--lime);
+  display:grid;place-items:center;font-size:19px;font-weight:800;line-height:1;flex:0 0 30px}
+details.invoer .body{padding:0 16px 16px}
+details.invoer[open] summary{border-bottom:1.5px solid var(--rand);margin-bottom:14px}
+
+/* ---------- budget per maand aanpassen ---------- */
+.budgetrij{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1.5px solid #F6EAE0}
+.budgetrij:last-of-type{border-bottom:0}
+.budgetrij .ic{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;flex:0 0 28px}
+.budgetrij .ic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.budgetrij .tekst{flex:1;min-width:0}
+.budgetrij .naam{font-size:13.5px;font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.budgetrij .standaard{display:none;font-size:10.5px;color:var(--zacht);font-weight:600;margin-top:1px}
+.budgetrij.gewijzigd .standaard,.budgetrij.uitgezet .standaard{display:block}
+.budgetrij input{width:78px;flex:0 0 78px;padding:8px 9px;font-size:14px;text-align:right;border-radius:11px}
+.budgetrij .munt{flex:0 0 auto;font-size:13px;font-weight:800;color:var(--zacht);margin-right:-4px}
+.budgetrij .omgerekend{font-size:10.5px;color:var(--zacht);font-weight:600;margin-top:1px}
+/* De inkomstenrij heeft een muntteken extra, en bedragen als 1,400.00 zijn
+   langer dan een budgetbedrag. Het bredere veld betalen we terug met een
+   krappere gap, zodat de rij precies even breed blijft. */
+.inkomstenrij{gap:7px}
+.inkomstenrij input{width:86px;flex:0 0 86px}
+.inkomstenrij input[readonly]{background:#F3EAE2;color:var(--zacht)}
+.budgetrij.gewijzigd input{border-color:var(--leuk);background:#fff}
+.budgetrij.gewijzigd .naam::after{content:"changed";background:var(--leuk);color:#fff;font-size:9px;
+  font-weight:800;border-radius:999px;padding:2px 7px;letter-spacing:.02em}
+.budgetrij.uitgezet{opacity:.45}
+.budgetrij.uitgezet input{text-decoration:line-through}
+
+/* De schakelaar: een categorie die deze maand wegvalt zet je uit in plaats
+   van hem te wissen, zodat hij volgende maand gewoon weer terugkomt. */
+.schakel{flex:0 0 40px;width:40px;height:23px;border-radius:999px;background:#E7D7C8;border:0;
+  position:relative;padding:0;cursor:pointer;transition:.15s}
+.schakel::after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.15s}
+.schakel.aan{background:var(--gym)}
+.schakel.aan::after{left:20px}
+.standaardrij{display:flex;align-items:center;gap:11px;background:#F4F8E2;border:1.5px solid #E3EDC2;
+  border-radius:16px;padding:12px;margin:14px 0 12px}
+.standaardrij .tekst{flex:1;min-width:0}
+.standaardrij .kop{font-size:13px;font-weight:800}
+.standaardrij .uitleg{font-size:11px;color:var(--zacht);font-weight:600;margin-top:2px}
+.spookknop{width:100%;background:transparent;border:1.5px dashed #DCC7B4;border-radius:14px;
+  padding:11px;font:inherit;font-weight:800;font-size:13px;color:var(--zacht);margin-top:12px}
+.budgettotaal{display:flex;justify-content:space-between;align-items:center;margin-top:13px;
+  padding-top:12px;border-top:1.5px solid #F6EAE0;font-size:13px;font-weight:800}
+.budgettotaal b{font-size:16px;font-stretch:86%}
+
+.dagkop2{font-size:10.5px;font-weight:800;color:var(--zacht);text-transform:uppercase;letter-spacing:.1em;
+  margin:16px 0 8px 4px}
+.dagkop2:first-child{margin-top:0}
+.post{display:flex;align-items:center;gap:11px;background:#FFF8F1;border:1.5px solid var(--rand);
+  border-radius:15px;padding:10px 12px;margin-bottom:8px}
+.post .ic{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;flex:0 0 32px}
+.post .ic svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.post .tekst{flex:1;min-width:0}
+.post .oms{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.post .cat2{font-size:11px;color:var(--zacht);font-weight:700;margin-top:1px}
+.post .bedrag{font-size:15px;font-weight:800;font-stretch:86%;white-space:nowrap}
+
+/* ---------- uitgave corrigeren of weggooien ----------
+   De post is nu een omhulsel: bovenin de regel zelf (een knop, zodat tikken
+   en toetsenbord vanzelf werken), eronder de acties die pas verschijnen als
+   je 'm opent. Zo blijft de lijst rustig maar is alles bereikbaar. */
+.post{display:block;padding:0;overflow:hidden}
+.postrij{display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;
+  background:none;border:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.postrij .pijl{flex:0 0 auto;color:var(--zacht);display:grid;place-items:center;transition:transform .15s}
+.postrij .pijl svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round}
+.post.open .postrij .pijl{transform:rotate(180deg)}
+.post.open{background:#fff;border-color:#E9D6C6}
+.postacties{display:none;gap:8px;padding:0 12px 11px;border-top:1.5px solid var(--rand);margin-top:2px;
+  padding-top:11px}
+.post.open .postacties{display:flex}
+.postacties button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px;border-radius:12px;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;
+  border:1.5px solid var(--rand);background:#FFF8F1;color:var(--inkt)}
+.postacties button svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.postacties .weg{border-color:#F3C9D2;background:#FDEFF2;color:#C0344F}
+.post.verwijderd{display:none}
+
+/* De terugdraaibalk zweeft boven de tabbalk, zodat een misklik nooit
+   definitief is. Geen "weet je het zeker?" vooraf: die vraag hoort bij
+   iets dat je niet kunt terugdraaien. */
+.terugbalk{position:fixed;left:50%;transform:translateX(-50%) translateY(140%);
+  bottom:calc(var(--balk) + 14px + env(safe-area-inset-bottom));
+  width:min(360px,calc(100vw - 30px));z-index:60;
+  display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:16px;
+  background:var(--inkt);color:#fff;box-shadow:0 10px 26px rgba(0,0,0,.28);
+  transition:transform .22s cubic-bezier(.2,.8,.3,1)}
+.terugbalk.zichtbaar{transform:translateX(-50%) translateY(0)}
+.terugbalk .melding{flex:1;min-width:0;font-size:12.5px;font-weight:700}
+.terugbalk .melding b{font-stretch:86%}
+.terugbalk button{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;
+  background:var(--gym);color:var(--inkt);border:0;border-radius:11px;padding:8px 12px;
+  font:inherit;font-size:12.5px;font-weight:800;cursor:pointer}
+.terugbalk button svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round}
+.leeg{display:none;text-align:center;color:var(--zacht);font-size:12.5px;font-weight:700;padding:18px 0}
+
+/* ---------- kalender ---------- */
+.kal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.kalkop{font-size:9px;font-weight:800;color:var(--zacht);text-align:center;padding:0 0 4px;letter-spacing:.1em}
+.dag{background:#FFF8F1;border:1.5px solid var(--rand);border-radius:11px;aspect-ratio:1/1.12;
+  padding:4px 2px 3px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  position:relative}
+.dag .nr{font-size:10.5px;font-weight:800;color:var(--zacht);line-height:1}
+.dag .bd{font-size:9px;font-weight:800;color:#B94A1E;line-height:1.1;text-align:center}
+.dag .bd.leeg{color:#D9C8BC;font-weight:700}
+.dag .stip{width:5px;height:5px;border-radius:50%;background:#E3D08F;margin-bottom:1px}
+.dag .stip.geen{background:transparent}
+.dag.vol{background:linear-gradient(150deg,#FF5A3C,#FF2E7E);border-color:transparent}
+.dag.vol .nr{color:rgba(255,255,255,.85)}
+.dag.vol .bd{color:#fff}
+.dag.middel{background:#FFE6D2;border-color:#F7D2B8}
+.dag.weekend{background:#FBF0FF;border-color:#EEDBF7}
+.dag.buiten{background:transparent;border:1.5px dashed #EBD8C8;opacity:.45}
+.dag.buiten .bd,.dag.buiten .stip{visibility:hidden}
+.dag.vandaag{border:2.5px solid var(--inkt);box-shadow:2px 2px 0 var(--lime)}
+.dag.vandaag .nr{color:var(--inkt)}
+.kallegenda{display:flex;gap:12px;font-size:10.5px;color:var(--zacht);font-weight:700;margin-top:12px;flex-wrap:wrap}
+.kallegenda i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-2px;
+  border:1.5px solid var(--rand)}
+
+.dagdetail{margin-top:12px}
+.dagdetail .datumkop{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.dagdetail .datumkop .d{font-size:16px;font-weight:800}
+.dagdetail .datumkop .t{font-size:17px;font-weight:800;font-stretch:86%}
+.notitie{background:#F6F2DC;border:1.5px solid #EBE3C2;border-radius:13px;padding:10px 12px;
+  font-size:12.5px;color:#7A6B33;font-weight:600;margin-top:10px}
+.notitie .kop{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:#A9995C;margin-bottom:3px}
+
+/* ---------- tabbalk ---------- */
+.tabbalk{
+  position:fixed;bottom:0;left:0;right:0;z-index:70;
+  display:flex;justify-content:center;pointer-events:none;
+}
+.tabbalk .binnen{
+  width:100%;max-width:420px;pointer-events:auto;
+  background:rgba(255,253,250,.94);backdrop-filter:blur(14px);
+  border-top:1.5px solid var(--rand);
+  display:grid;grid-template-columns:repeat(3,1fr);
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+}
+.tabbalk button{
+  background:none;border:0;font:inherit;color:var(--zacht);font-weight:700;font-size:10.5px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0;border-radius:14px}
+.tabbalk button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+.tabbalk button.actief{color:var(--inkt)}
+.tabbalk button.actief svg{stroke-width:2.3}
+.tabbalk button .bol{width:34px;height:26px;border-radius:999px;display:grid;place-items:center;transition:.15s}
+.tabbalk button.actief .bol{background:var(--lime)}
+</style>
+<style>
+/* ---------- alleen voor de werkende app ----------
+   De mockup had een vaste maand; hier kun je bladeren, dus de kop heeft
+   pijlen nodig. De rest van de opmaak komt ongewijzigd uit het ontwerp. */
+.maandnav{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.maandpijl{background:var(--inkt);color:var(--lime);border:0;width:30px;height:30px;border-radius:50%;
+  font:inherit;font-size:17px;font-weight:800;line-height:1;cursor:pointer;display:grid;place-items:center;
+  padding:0;flex:0 0 30px}
+.maandpijl:active{transform:scale(.93)}
+.maandknop{cursor:pointer;white-space:nowrap;font-size:12.5px;padding:8px 11px}
+h1{font-size:19px}
+
+/* Lege staten: een nieuwe gebruiker begint zonder gegevens, en dan moet het
+   scherm uitleggen wat er hoort te komen in plaats van leeg te blijven. */
+.nowrap{white-space:nowrap}
+.legekaart{text-align:center;padding:22px 10px}
+.legekaart .groot{font-size:14.5px;font-weight:800}
+.legekaart .klein{font-size:12px;color:var(--zacht);font-weight:600;margin-top:4px;line-height:1.5}
+
+/* De notitie bij een dag is nu typbaar. */
+.notitieveld{width:100%;box-sizing:border-box;background:#F6F2DC;border:1.5px solid #EBE3C2;
+  border-radius:13px;padding:10px 12px;font:inherit;font-size:12.5px;color:#6B5F2E;resize:vertical;
+  min-height:62px;margin-top:10px}
+.notitieveld::placeholder{color:#B3A56E}
+.dag{cursor:pointer}
+.dag.gekozen{outline:2.5px solid var(--inkt);outline-offset:1px}
+
+/* Knoppen in Instellingen die iets ingrijpends doen, mogen er ook naar uitzien. */
+.knop.stil{background:transparent;color:var(--zacht);border:1.5px dashed #DCC7B4}
+.knop.gevaar{background:#FDEFF2;color:#C0344F;border:1.5px solid #F3C9D2}
+.veldrij .fout{color:#C0344F;font-size:11.5px;font-weight:700;margin-top:5px;display:none}
+.veldrij.mis .fout{display:block}
+.veldrij.mis input,.veldrij.mis select{border-color:#E79BAB}
+.bewerkbalk{display:none;align-items:center;gap:8px;background:#FFF3D6;border:1.5px solid #F0DFB0;
+  border-radius:13px;padding:9px 11px;margin-bottom:11px;font-size:12px;font-weight:700;color:#8A6D1F}
+.bewerkbalk.aan{display:flex}
+.bewerkbalk button{margin-left:auto;background:none;border:0;font:inherit;font-weight:800;
+  color:#8A6D1F;text-decoration:underline;cursor:pointer;flex:0 0 auto}
+
+/* Een nieuwe kostenpost of inkomstenbron vragen we in de pagina zelf, niet met
+   het grijze systeemvenster van de browser. Dat venster kan geen twee vragen
+   tegelijk stellen (naam én bedrag), en "OK = euro, Annuleer = pond" is een
+   raadsel in plaats van een keuze. */
+.nieuwrij{border:1.5px dashed #DCC7B4;border-radius:15px;padding:12px;margin:0 0 11px;
+  background:#FFFDF8;display:flex;flex-direction:column;gap:10px}
+/* Zonder deze regel wint display:flex van het hidden-attribuut en staat het
+   rijtje altijd open. */
+.nieuwrij[hidden]{display:none}
+.nieuwrij .veld{display:flex;flex-direction:column;gap:5px}
+.nieuwrij .veld>span{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--zacht)}
+.nieuwrij input{width:100%;box-sizing:border-box;background:var(--zand);border:1.5px solid var(--rand);
+  border-radius:12px;padding:10px 12px;font:inherit;font-size:13.5px;font-weight:700;color:var(--inkt)}
+.nieuwrij input::placeholder{color:#C4AE9C;font-weight:600}
+.muntkeuze{display:flex;gap:7px}
+.muntknop{flex:1;background:var(--zand);border:1.5px solid var(--rand);border-radius:12px;padding:9px 6px;
+  font:inherit;font-size:12.5px;font-weight:800;color:var(--zacht);cursor:pointer}
+.muntknop.aan{background:var(--inkt);border-color:var(--inkt);color:var(--lime)}
+.nieuwknoppen{display:flex;gap:8px}
+/* Bij een euro-uitgave laten we meteen zien wat dat in ponden wordt, zodat je
+   niet hoeft te gokken of het binnen je budget past. */
+/* De opmaak uit het ontwerp mikt op label.veld; de muntkeuze is geen label
+   (er zit geen invoerveld in, maar twee knoppen), dus krijgt hij het kopje
+   hier op dezelfde manier. */
+div.veld>span{display:block;font-size:10px;color:var(--zacht);margin-bottom:5px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em}
+.muntuitleg{font-size:11.5px;font-weight:700;color:#6F8C00;margin-top:6px}
+.muntuitleg[hidden]{display:none}
+.knop.klein,.spookknop.klein{flex:1;padding:10px 8px;font-size:12.5px;margin:0}
+
+/* Het app-icoon in de kop. De 24% radius is wat iOS zelf op een icoon zet,
+   dus in de app ziet hij eruit zoals hij straks op het beginscherm staat. */
+h1{display:flex;align-items:center;gap:9px}
+.merkicoon{width:27px;height:27px;border-radius:24%;flex:0 0 27px;display:block}
+
+/* Het kaartje in Settings dat laat zien hoe de app op je beginscherm komt.
+   Zonder die uitleg blijft dit een pagina in Safari en geen app. */
+.beginscherm{display:flex;align-items:center;gap:13px;background:var(--zand);
+  border:1.5px solid var(--rand);border-radius:15px;padding:13px;margin:0 0 11px}
+.beginscherm img{width:56px;height:56px;border-radius:24%;flex:0 0 56px;display:block;
+  box-shadow:0 3px 9px rgba(36,20,35,.22)}
+.beginscherm b{display:block;font-size:13.5px;margin-bottom:3px}
+.beginscherm p{margin:0;font-size:11.5px;line-height:1.45;color:var(--zacht);font-weight:600}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-huur" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.6V20h13V9.6"/><path d="M10 20v-5.2h4V20"/></symbol>
+  <symbol id="i-bood" viewBox="0 0 24 24"><path d="M5.6 7.6h12.8l-1 12.6h-10.8z"/><path d="M9 7.6V6a3 3 0 0 1 6 0v1.6"/></symbol>
+  <symbol id="i-leuk" viewBox="0 0 24 24"><path d="M4 4.6h16l-8 8.2v6.6"/><path d="M8.4 19.4h7.2"/></symbol>
+  <symbol id="i-kled" viewBox="0 0 24 24"><path d="M9.2 3.6 5 6.2 3.4 9.8l3.1 1.4.6-1.1v10.3h9.8V10.1l.6 1.1 3.1-1.4L20 6.2l-4.2-2.6a1.9 1.9 0 0 1-3.3 1.3 1.9 1.9 0 0 1-3.3-1.3Z"/></symbol>
+  <symbol id="i-gwl" viewBox="0 0 24 24"><path d="M13.2 2.5 5 13.8h5.4L9.8 21.5 18.6 10h-5.4z"/></symbol>
+  <symbol id="i-gym" viewBox="0 0 24 24"><path d="M2.8 10v4"/><path d="M21.2 10v4"/><path d="M6 7.5v9"/><path d="M18 7.5v9"/><path d="M6 12h12"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><circle cx="5.6" cy="16.4" r="3.4"/><circle cx="18.4" cy="16.4" r="3.4"/><path d="M5.6 16.4 9.4 8h4.4l4.6 8.4"/><path d="M9.4 8h5.2"/><path d="M12 16.4 14.2 8"/></symbol>
+  <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M3.6 8.8a13.2 13.2 0 0 1 16.8 0"/><path d="M6.8 12.6a8.6 8.6 0 0 1 10.4 0"/><path d="M9.8 16.1a4.4 4.4 0 0 1 4.4 0"/><circle cx="12" cy="19.2" r="1.15" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-rnd" viewBox="0 0 24 24"><path d="M11 3.2 12.9 8.7 18.4 10.6 12.9 12.5 11 18 9.1 12.5 3.6 10.6 9.1 8.7z"/><path d="M17.8 15.4l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></symbol>
+  <symbol id="i-ihs" viewBox="0 0 24 24"><path d="M12 20.2S4.4 15.6 4.4 10.5A3.9 3.9 0 0 1 12 8.4a3.9 3.9 0 0 1 7.6 2.1c0 5.1-7.6 9.7-7.6 9.7Z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M12 11v6"/><path d="M12 7.6v.1"/></symbol>
+  <symbol id="i-beurs" viewBox="0 0 24 24"><path d="M2.5 8.6 12 4.4l9.5 4.2L12 12.8z"/><path d="M6.6 10.7v4.5c0 1.6 2.4 2.9 5.4 2.9s5.4-1.3 5.4-2.9v-4.5"/><path d="M20.6 9.4v5.2"/></symbol>
+  <symbol id="i-spaar" viewBox="0 0 24 24"><ellipse cx="12" cy="6.4" rx="7.2" ry="2.9"/><path d="M4.8 6.4v5c0 1.6 3.2 2.9 7.2 2.9s7.2-1.3 7.2-2.9v-5"/><path d="M4.8 11.4v5c0 1.6 3.2 2.9 7.2 2.9s7.2-1.3 7.2-2.9v-5"/></symbol>
+  <symbol id="i-ov" viewBox="0 0 24 24"><rect x="5" y="3.4" width="14" height="13.2" rx="3.6"/><path d="M5 10.2h14"/><circle cx="9" cy="13.4" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="13.4" r="1" fill="currentColor" stroke="none"/><path d="m7.6 16.6-2 3.8"/><path d="m16.4 16.6 2 3.8"/></symbol>
+  <symbol id="i-extra" viewBox="0 0 24 24"><rect x="3.4" y="8.4" width="17.2" height="4.2" rx="1.3"/><path d="M5.2 12.6V20h13.6v-7.4"/><path d="M12 8.4V20"/><path d="M12 8.4S10.4 3.9 8.2 3.9a2.15 2.15 0 0 0 0 4.5z"/><path d="M12 8.4s1.6-4.5 3.8-4.5a2.15 2.15 0 0 1 0 4.5z"/></symbol>
+  <symbol id="i-werk" viewBox="0 0 24 24"><rect x="2.9" y="7.4" width="18.2" height="12.2" rx="3.2"/><path d="M8.8 7.4V6a2 2 0 0 1 2-2h2.4a2 2 0 0 1 2 2v1.4"/><path d="M2.9 12.6h18.2"/></symbol>
+  <symbol id="i-tabdash" viewBox="0 0 24 24"><path d="M4 13.5a8 8 0 0 1 16 0"/><path d="m12 13.5 4-4"/><path d="M4 13.5h16"/></symbol>
+  <symbol id="i-tablijst" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/></symbol>
+  <symbol id="i-tabkal" viewBox="0 0 24 24"><rect x="3.4" y="5.2" width="17.2" height="15.4" rx="3.4"/><path d="M3.4 10h17.2"/><path d="M8 3.4v3.4"/><path d="M16 3.4v3.4"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol>
+  <symbol id="i-prullenbak" viewBox="0 0 24 24"><path d="M4 7h16M10 4h4M9 7v11m6-11v11M6 7l1 13h10l1-13"/></symbol>
+  <symbol id="i-potlood" viewBox="0 0 24 24"><path d="M4 20h4L20 8l-4-4L4 16zM14 6l4 4"/></symbol>
+  <symbol id="i-terug" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/></symbol>
+</svg>
+
+<div class="app">
+
+<header>
+  <h1><img src="icoon-180.png" alt="" class="merkicoon">London Budget</h1>
+  <div class="maandnav">
+    <button class="maandpijl" id="vorigemaand" aria-label="Previous month">&lsaquo;</button>
+    <button class="maandknop" id="maandlabel">&nbsp;</button>
+    <button class="maandpijl" id="volgendemaand" aria-label="Next month">&rsaquo;</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ================= DASHBOARD ================= -->
+<section class="paneel actief" id="dash">
+
+  <div class="hero">
+    <div class="zon"></div>
+    <div class="kop">
+      <div class="label">Left to spend</div>
+      <div class="bedrag" id="heroBedrag">£0.00</div>
+      <div class="klein" id="heroKlein">&nbsp;</div>
+    </div>
+    <div class="ring">
+      <svg viewBox="0 0 120 120" width="74" height="74">
+        <circle cx="60" cy="60" r="48" fill="rgba(36,20,35,.22)" stroke="rgba(255,255,255,.3)" stroke-width="13"/>
+        <circle id="ringBoog" cx="60" cy="60" r="48" fill="none" stroke="#D8F34B" stroke-width="13" stroke-linecap="round"
+                stroke-dasharray="0 302" transform="rotate(-90 60 60)"/>
+        <text id="ringTekst" x="60" y="57" text-anchor="middle" fill="#fff" font-size="26" font-weight="800" font-family="Bricolage">0%</text>
+        <text x="60" y="75" text-anchor="middle" fill="rgba(255,255,255,.88)" font-size="12" font-weight="600" font-family="Bricolage">spent</text>
+      </svg>
+    </div>
+    <svg class="skyline" viewBox="0 0 420 130" preserveAspectRatio="none" aria-hidden="true">
+      <g fill="rgba(36,20,35,.42)">
+        <circle cx="52" cy="66" r="28" fill="none" stroke="rgba(36,20,35,.42)" stroke-width="5"/>
+        <circle cx="52" cy="66" r="19" fill="none" stroke="rgba(36,20,35,.2)" stroke-width="2.5"/>
+        <path d="M49 66h6v64h-6z"/>
+        <path d="M104 50h22v80h-22z"/>
+        <path d="M101 50h28v6h-28z"/>
+        <path d="M115 26l12 24h-24z"/>
+        <circle cx="115" cy="66" r="6.5" fill="rgba(255,255,255,.55)"/>
+        <path d="M134 92h54v38h-54z"/>
+        <path d="M142 82h6v10h-6zM158 78h6v14h-6zM174 82h6v10h-6z"/>
+        <path d="M212 130 226 34l14 96z"/>
+        <path d="M266 130c-7-26-7-53 9-72 16 19 16 46 9 72z"/>
+        <path d="M296 98h30v32h-30z"/>
+        <path d="M336 74h14v56h-14zM380 74h14v56h-14z"/>
+        <path d="M334 68h18v6h-18zM378 68h18v6h-18z"/>
+        <path d="M343 54l7 14h-14zM387 54l7 14h-14z"/>
+        <path d="M350 88h30v8h-30z"/>
+        <path d="M350 106q15 14 30 0v8q-15 12-30 0z"/>
+      </g>
+      <g>
+        <rect x="176" y="102" width="52" height="24" rx="5" fill="#FF3B30" opacity=".85"/>
+        <rect x="182" y="107" width="11" height="9" rx="2" fill="#FFF1E4" opacity=".9"/>
+        <rect x="197" y="107" width="11" height="9" rx="2" fill="#FFF1E4" opacity=".9"/>
+        <rect x="212" y="107" width="10" height="9" rx="2" fill="#FFF1E4" opacity=".9"/>
+        <circle cx="190" cy="126" r="5" fill="#241423" opacity=".7"/>
+        <circle cx="216" cy="126" r="5" fill="#241423" opacity=".7"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="mini">
+    <div class="stat"><div class="vlek" style="background:var(--gwl)"></div><div class="k">Income</div><div class="v" id="statInkomen">£0.00</div></div>
+    <div class="stat"><div class="vlek" style="background:var(--kled)"></div><div class="k">Budget</div><div class="v" id="statBudget">£0.00</div></div>
+    <div class="stat"><div class="vlek" style="background:var(--bood)"></div><div class="k">Spent</div><div class="v" id="statUit">£0.00</div></div>
+    <div class="stat"><div class="vlek" style="background:var(--leuk)"></div><div class="k">Left at month end</div><div class="v" id="statOver">£0.00</div></div>
+  </div>
+
+  <div class="kaart">
+    <h2>How much is left?</h2>
+    <p class="sub">The whole bar is your monthly budget. The coloured part is what you already spent.</p>
+    <div class="gl">
+      <span><i style="background:var(--kled)"></i>Spent</span>
+      <span><i style="background:#EEE0FA"></i>Left</span>
+      <span><i style="background:repeating-linear-gradient(118deg,#FF1F4B,#FF1F4B 4px,#FF6685 4px,#FF6685 8px)"></i>Over budget</span>
+    </div>
+    <div id="balken"></div>
+    <div class="totaalrij"><span>Total spent</span><b id="balkenTotaal">£0.00</b></div>
+  </div>
+
+  <details class="invoer" id="budgetblok">
+    <summary><span class="plus">&#9998;</span> Change your budget</summary>
+    <div class="body">
+      <p class="sub" style="margin-top:0">Two kinds of change, one place.
+        <b>Did a cost change for good?</b> Type the new amount and switch on
+        <i>Make this my new default</i> at the bottom &mdash; every month from now on follows it.
+        <b>Just this one month?</b> Leave that switch off and only <span class="dezemaand"></span> changes.
+        And a cost that does not come up at all this month goes off with its own switch;
+        next month it is simply back.</p>
+
+      <div id="budgetrijen"></div>
+
+      <button class="spookknop" id="nieuwecategorie">+ New cost</button>
+
+      <div class="nieuwrij" id="nieuwecategorierij" hidden>
+        <label class="veld"><span>Name</span>
+          <input id="nieuwecategorienaam" placeholder="E.g. Books"></label>
+        <label class="veld"><span>Monthly amount</span>
+          <input id="nieuwecategoriebedrag" inputmode="decimal" placeholder="£0.00"></label>
+        <div class="nieuwknoppen">
+          <button class="knop klein" id="nieuwecategorieklaar">Add cost</button>
+          <button class="spookknop klein" id="nieuwecategorieaf">Cancel</button>
+        </div>
+      </div>
+
+      <div class="budgettotaal"><span>Budget for <span class="dezemaand"></span></span><b id="budgetsom">£0.00</b></div>
+
+      <div class="standaardrij">
+        <span class="tekst"><div class="kop">Make this my new default</div>
+          <div class="uitleg">On: every month from now on uses these amounts. Off: only <span class="dezemaand"></span> changes.</div></span>
+        <button class="schakel" id="budgetstandaard" aria-label="Default on or off"></button>
+      </div>
+
+      <button class="knop" id="budgetopslaan">Save</button>
+      <p class="voetnoot">Expenses you already logged stay exactly where they are; only the length of the bars changes.</p>
+    </div>
+  </details>
+
+  <div class="kaart">
+    <h2>Where your money comes from</h2>
+    <p class="sub">Euro amounts are converted using your exchange rate. Every source has its own run time, so each
+      month only counts what actually arrives.</p>
+
+    <div id="bronnen"></div>
+
+    <details class="werkblok">
+      <summary>
+        <div class="bron">
+          <span class="ic" style="background:#E7DCE8;color:var(--rnd)"><svg><use href="#i-werk"/></svg></span>
+          <span class="tekst"><span class="naam">Work <span class="badge-vraag">varies per month</span></span>
+            <span class="tik">log individual jobs <svg><use href="#i-chevron"/></svg></span></span>
+          <span class="geld"><div class="pond" id="werkKop">£0.00</div></span>
+        </div>
+      </summary>
+
+      <div class="werkbinnen">
+        <div id="klussen"></div>
+
+        <div class="tweekolom veldrij">
+          <label class="veld"><span>Date</span><input id="klusDatum" inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+          <label class="veld"><span>Amount</span><input id="klusBedrag" inputmode="decimal" placeholder="£0.00"></label>
+        </div>
+        <label class="veld veldrij"><span>What for</span><input id="klusOms" placeholder="E.g. three shifts"></label>
+        <div class="veldrij" id="klusFoutrij"><span class="fout" id="klusFout"></span></div>
+        <button class="knop" id="klusToevoegen">Add job</button>
+
+        <div class="werktotaal"><span>Earned in <span class="dezemaand"></span></span><b id="werkTotaal">£0.00</b></div>
+      </div>
+    </details>
+
+    <div class="totaalrij"><span><span class="dezemaand"></span> income</span><b id="inkomenTotaal">£0.00</b></div>
+    <p class="voetnoot" id="inkomenVoetnoot"></p>
+  </div>
+
+  <details class="invoer" id="inkomstenblok">
+    <summary><span class="plus">&#9998;</span> Change your income</summary>
+    <div class="body">
+      <p class="sub" style="margin-top:0">Two kinds of change, one place.
+        <b>Did your grant or savings change for good?</b> Type the new amount and switch on
+        <i>Make this my new default</i> at the bottom &mdash; every month from now on follows it.
+        <b>Just this one month?</b> Leave that switch off and only <span class="dezemaand"></span> changes.
+        And a source that does not pay out at all this month goes off with its own switch.</p>
+
+      <div id="inkomstenrijen"></div>
+
+      <button class="spookknop" id="nieuwebron">+ New income source</button>
+
+      <div class="nieuwrij" id="nieuwebronrij" hidden>
+        <label class="veld"><span>Name</span>
+          <input id="nieuwebronnaam" placeholder="E.g. Birthday money"></label>
+        <div class="veld"><span>Currency</span>
+          <div class="muntkeuze">
+            <button class="muntknop aan" id="muntEUR" data-munt="EUR">&euro; euros</button>
+            <button class="muntknop" id="muntGBP" data-munt="GBP">&pound; pounds</button>
+          </div>
+        </div>
+        <label class="veld"><span>Monthly amount</span>
+          <input id="nieuwebronbedrag" inputmode="decimal" placeholder="0.00"></label>
+        <div class="nieuwknoppen">
+          <button class="knop klein" id="nieuwebronklaar">Add income</button>
+          <button class="spookknop klein" id="nieuwebronaf">Cancel</button>
+        </div>
+      </div>
+
+      <div class="budgettotaal"><span>Income for <span class="dezemaand"></span></span><b id="inkomstensom">£0.00</b></div>
+
+      <div class="standaardrij">
+        <span class="tekst"><div class="kop">Make this my new default</div>
+          <div class="uitleg">On: every month from now on uses these amounts. Off: only <span class="dezemaand"></span> changes.</div></span>
+        <button class="schakel" id="inkomstenstandaard" aria-label="Default on or off"></button>
+      </div>
+
+      <button class="knop" id="inkomstenopslaan">Save</button>
+      <p class="voetnoot">Work is the one you cannot type over here &mdash; that total comes from the jobs you log
+        above, so it always matches what you actually got paid. Change the exchange rate in Settings and every
+        euro amount is recalculated.</p>
+    </div>
+  </details>
+
+  <div class="kaart">
+    <h2>Settings</h2>
+    <p class="sub">Change these and the whole dashboard follows.</p>
+    <label class="veld veldrij"><span>Exchange rate &mdash; &euro;1 =</span><input id="koers" inputmode="decimal"></label>
+    <p class="voetnoot" style="margin-top:0">Everything is saved on this phone only. Nothing is sent anywhere,
+      so no account is needed &mdash; but clearing your browser data clears your budget too.</p>
+
+    <div class="beginscherm">
+      <img src="icoon-512.png" alt="The London Budget app icon: a pound sign over a London skyline at sunset">
+      <div>
+        <b>Put it on your home screen</b>
+        <p>In Safari, tap Share and then <i>Add to Home Screen</i>. You get this icon, and the
+          app opens full screen without the browser bar.</p>
+      </div>
+    </div>
+    <button class="knop stil" id="voorbeeldknop">Load example month</button>
+    <button class="knop gevaar" id="wisknop" style="margin-top:8px">Delete everything and start over</button>
+  </div>
+</section>
+
+<!-- ================= EXPENSES ================= -->
+<section class="paneel" id="trans">
+  <div class="tip">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#FF2E7E" stroke-width="1.8" stroke-linecap="round"><use href="#i-info"/></svg>
+    <div><b>Enter it once.</b> Dashboard, bars and calendar all update straight away.</div>
+  </div>
+
+  <details class="invoer" id="uitgaveblok" open>
+    <summary><span class="plus">+</span> <span id="formulierkop">Add expense</span></summary>
+    <div class="body">
+      <div class="bewerkbalk" id="bewerkbalk">
+        <span id="bewerktekst"></span><button type="button" id="bewerkstop">Cancel</button>
+      </div>
+      <div class="tweekolom veldrij">
+        <label class="veld"><span>Date</span><input id="uitDatum" inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+        <label class="veld"><span>Amount</span><input id="uitBedrag" inputmode="decimal" placeholder="£0.00"></label>
+      </div>
+      <div class="veld veldrij"><span>Paid in</span>
+        <div class="muntkeuze">
+          <button type="button" class="muntknop aan" id="uitMuntGBP" data-munt="GBP">&pound; pounds</button>
+          <button type="button" class="muntknop" id="uitMuntEUR" data-munt="EUR">&euro; euros</button>
+        </div>
+        <div class="muntuitleg" id="uitMuntUitleg" hidden></div>
+      </div>
+      <label class="veld veldrij"><span>Description</span><input id="uitOms" placeholder="E.g. coffee at Monmouth"></label>
+      <label class="veld veldrij"><span>Category</span><select id="uitCat"></select></label>
+      <div class="veldrij" id="uitFoutrij"><span class="fout" id="uitFout"></span></div>
+      <button class="knop" id="uitOpslaan">Add</button>
+    </div>
+  </details>
+
+  <div class="kaart">
+    <h2 class="dezemaand"></h2>
+    <p class="sub"><span id="aantalposten">0</span> expenses &middot; <b id="somposten">£0.00</b> in total</p>
+    <div id="postenlijst"></div>
+    <div class="totaalrij"><span><span class="dezemaand"></span> total</span><b id="somtotaal">£0.00</b></div>
+  </div>
+</section>
+
+<!-- ================= CALENDAR ================= -->
+<section class="paneel" id="kal">
+  <div class="tip">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#9B5DE5" stroke-width="1.8" stroke-linecap="round"><use href="#i-info"/></svg>
+    <div><b>Your month at a glance.</b> The fuller the colour, the more you spent that day. Tap a day for the details.</div>
+  </div>
+
+  <div class="kaart">
+    <h2 class="dezemaand"></h2>
+    <p class="sub" id="kalSub">&nbsp;</p>
+    <div class="kal" id="kalender"></div>
+    <div class="kallegenda">
+      <span><i style="background:#FFF8F1"></i>Little</span>
+      <span><i style="background:#FFE6D2;border-color:#F7D2B8"></i>Some</span>
+      <span><i style="background:linear-gradient(150deg,#FF5A3C,#FF2E7E);border-color:transparent"></i>A lot</span>
+      <span><i style="background:#E3D08F;border-color:transparent;border-radius:50%"></i>Note</span>
+    </div>
+  </div>
+
+  <div class="kaart dagdetail" id="dagdetail"></div>
+</section>
+
+</main>
+
+<div class="terugbalk" id="terugbalk" role="status" aria-live="polite">
+  <span class="melding" id="terugtekst"></span>
+  <button type="button" id="terugknop"><svg><use href="#i-terug"/></svg>Undo</button>
+</div>
+</div>
+
+<div class="tabbalk">
+  <div class="binnen">
+    <button class="actief" data-tab="dash"><span class="bol"><svg><use href="#i-tabdash"/></svg></span>Dashboard</button>
+    <button data-tab="trans"><span class="bol"><svg><use href="#i-tablijst"/></svg></span>Expenses</button>
+    <button data-tab="kal"><span class="bol"><svg><use href="#i-tabkal"/></svg></span>Calendar</button>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   London Budget — de werkende app.
+
+   Alles staat in dit ene bestand: geen server, geen account, geen build.
+   Je gegevens blijven in localStorage op dit toestel staan.
+
+   De opzet is bewust saai: er is één `st` met alles erin, elke wijziging
+   gaat via `bewaar()`, en daarna tekent `tekenAlles()` het scherm opnieuw
+   uit die ene bron. Zo kunnen dashboard, lijst en kalender niet uit elkaar
+   gaan lopen, want ze lezen alle drie hetzelfde.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------
+   1. Vaste gegevens: de categorieën en de inkomstenbronnen.
+   Elke categorie draagt haar eigen kleuren mee, zodat het icoon, het
+   balkje en de kalender vanzelf bij elkaar passen.
+   --------------------------------------------------------------- */
+var CATEGORIEEN = [
+  {id:'huur',  naam:'Rent',                      icoon:'i-huur',  zacht:'#FCE3DA', icoonkleur:'var(--huur)', balk:'var(--huur)', bedrag:750},
+  {id:'bood',  naam:'Groceries',                 icoon:'i-bood',  zacht:'#D6F0EE', icoonkleur:'var(--bood)', balk:'var(--bood)', bedrag:250},
+  {id:'leuk',  naam:'Fun & going out',           icoon:'i-leuk',  zacht:'#FFD9E7', icoonkleur:'var(--leuk)', balk:'var(--leuk)', bedrag:300},
+  {id:'kled',  naam:'Clothes',                   icoon:'i-kled',  zacht:'#EBDCFB', icoonkleur:'var(--kled)', balk:'var(--kled)', bedrag:100},
+  {id:'gwl',   naam:'Gas / water / electricity', icoon:'i-gwl',   zacht:'#FCEBCB', icoonkleur:'#C98600',     balk:'var(--gwl)',  bedrag:75},
+  {id:'gym',   naam:'Gym',                       icoon:'i-gym',   zacht:'#E6F0C4', icoonkleur:'#6F8C00',     balk:'var(--gym)',  bedrag:24},
+  {id:'fiets', naam:'Bike & transport',          icoon:'i-swap',  zacht:'#FBEEC0', icoonkleur:'#B08A00',     balk:'var(--swap)', bedrag:16.90},
+  {id:'wifi',  naam:'Wifi',                      icoon:'i-wifi',  zacht:'#DCF2DE', icoonkleur:'#3E9E4A',     balk:'var(--wifi)', bedrag:10},
+  {id:'rnd',   naam:'Odds & ends',               icoon:'i-rnd',   zacht:'#E7DCE8', icoonkleur:'var(--rnd)',  balk:'var(--rnd)',  bedrag:100},
+  {id:'ihs',   naam:'IHS health surcharge',      icoon:'i-ihs',   zacht:'#FBDFE4', icoonkleur:'#D25A72',     balk:'var(--ihs)',  bedrag:64.67}
+];
+
+/* `van` en `tot` zijn maandsleutels. Een bron telt alleen mee in de maanden
+   binnen haar looptijd; daarbuiten staat ze vanzelf uit. Zo hoef je in
+   september niets te doen om de OV-vergoeding weg te houden. */
+var BRONNEN = [
+  {id:'beurs', naam:'Student grant',   icoon:'i-beurs', zacht:'#EBDCFB', icoonkleur:'var(--kled)', valuta:'EUR', bedrag:1400,   van:null,      tot:null},
+  {id:'spaar', naam:'Savings',         icoon:'i-spaar', zacht:'#D6F0EE', icoonkleur:'var(--bood)', valuta:'EUR', bedrag:666,    van:null,      tot:null},
+  {id:'ov',    naam:'Travel allowance',icoon:'i-ov',    zacht:'#FCEBCB', icoonkleur:'#C98600',     valuta:'EUR', bedrag:110,    van:'2026-10', tot:'2027-03'},
+  {id:'extra', naam:'One-off grant',   icoon:'i-extra', zacht:'#FFD9E7', icoonkleur:'var(--leuk)', valuta:'EUR', bedrag:281.25, van:'2027-01', tot:'2027-08'},
+  {id:'werk',  naam:'Work',            icoon:'i-werk',  zacht:'#E7DCE8', icoonkleur:'var(--rnd)',  valuta:'GBP', bedrag:0,      van:null,      tot:null, afgeleid:true}
+];
+
+/* Nieuwe posten die jij zelf verzint krijgen om de beurt een kleur, zodat
+   ze niet allemaal grijs worden. */
+var PALET = [
+  {icoon:'i-rnd',  zacht:'#E7DCE8', icoonkleur:'var(--rnd)',  balk:'var(--rnd)'},
+  {icoon:'i-leuk', zacht:'#FFD9E7', icoonkleur:'var(--leuk)', balk:'var(--leuk)'},
+  {icoon:'i-bood', zacht:'#D6F0EE', icoonkleur:'var(--bood)', balk:'var(--bood)'},
+  {icoon:'i-kled', zacht:'#EBDCFB', icoonkleur:'var(--kled)', balk:'var(--kled)'},
+  {icoon:'i-gwl',  zacht:'#FCEBCB', icoonkleur:'#C98600',     balk:'var(--gwl)'}
+];
+
+var MAANDEN = ['January','February','March','April','May','June',
+               'July','August','September','October','November','December'];
+var DAGEN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/* ---------------------------------------------------------------
+   2. Opslag
+   --------------------------------------------------------------- */
+var SLEUTEL = 'londonbudget.v1';
+var st, gekozenMaand, gekozenDag = null, bewerktId = null;
+
+function verseStaat(){
+  return {
+    versie: 1,
+    koers: 0.85,
+    categorieen: CATEGORIEEN.map(function(c){ return kopie(c); }),
+    bronnen: BRONNEN.map(function(b){ return kopie(b); }),
+    maanden: {},          /* "2026-09": {budget:{bedrag:{},stand:{}}, inkomen:{...}} */
+    uitgaven: [],
+    klussen: [],
+    notities: {}
+  };
+}
+
+function kopie(o){ return JSON.parse(JSON.stringify(o)); }
+
+function laad(){
+  try{
+    var rauw = localStorage.getItem(SLEUTEL);
+    if(!rauw) return verseStaat();
+    var g = JSON.parse(rauw);
+    if(!g || g.versie !== 1) return verseStaat();
+
+    /* Nieuwe vaste categorieën of bronnen uit een latere versie van de app
+       voegen we toe zonder jouw bedragen aan te raken. */
+    CATEGORIEEN.forEach(function(c){
+      if(!g.categorieen.some(function(x){ return x.id === c.id; })) g.categorieen.push(kopie(c));
+    });
+    BRONNEN.forEach(function(b){
+      if(!g.bronnen.some(function(x){ return x.id === b.id; })) g.bronnen.push(kopie(b));
+    });
+    return g;
+  }catch(e){
+    /* Liever opnieuw beginnen dan vastlopen op kapotte opslag. */
+    return verseStaat();
+  }
+}
+
+function bewaar(){
+  try{ localStorage.setItem(SLEUTEL, JSON.stringify(st)); }
+  catch(e){ meld('Could not save — your phone storage may be full'); }
+}
+
+/* ---------------------------------------------------------------
+   3. Kleine hulpjes: geld en datums
+   --------------------------------------------------------------- */
+function naarGetal(t){
+  var n = parseFloat(String(t).replace(/,/g,'').replace(/[^0-9.-]/g,''));
+  return isFinite(n) ? n : 0;
+}
+function pond(n){
+  return '£' + (n<0?-n:n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function pondMin(n){ return (n<0?'-':'') + pond(n); }
+function euro(n){
+  return '€' + n.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function tweeCijfers(n){ return (n<10?'0':'') + n; }
+
+function maandSleutel(d){ return d.getFullYear() + '-' + tweeCijfers(d.getMonth()+1); }
+function sleutelNaarDelen(s){ return {jaar:+s.slice(0,4), maand:+s.slice(5,7)}; }
+function maandNaam(s){ var d = sleutelNaarDelen(s); return MAANDEN[d.maand-1]; }
+function maandVol(s){ var d = sleutelNaarDelen(s); return MAANDEN[d.maand-1] + ' ' + d.jaar; }
+function maandOpschuiven(s, stappen){
+  var d = sleutelNaarDelen(s);
+  var m = d.maand - 1 + stappen;
+  var jaar = d.jaar + Math.floor(m/12);
+  var maand = ((m % 12) + 12) % 12;
+  return jaar + '-' + tweeCijfers(maand+1);
+}
+function dagSleutel(jaar, maand, dag){ return jaar + '-' + tweeCijfers(maand) + '-' + tweeCijfers(dag); }
+function dagenInMaand(s){ var d = sleutelNaarDelen(s); return new Date(d.jaar, d.maand, 0).getDate(); }
+
+/* Invoer is dd/mm/jjjj (Brits), opslag is jjjj-mm-dd (sorteerbaar). */
+function leesDatum(t){
+  var m = String(t).trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if(!m) return null;
+  var dag = +m[1], maand = +m[2], jaar = +m[3];
+  if(maand < 1 || maand > 12) return null;
+  if(dag < 1 || dag > new Date(jaar, maand, 0).getDate()) return null;
+  return dagSleutel(jaar, maand, dag);
+}
+function toonDatum(s){
+  return s.slice(8,10) + '/' + s.slice(5,7) + '/' + s.slice(0,4);
+}
+function kortDatum(s){
+  return (+s.slice(8,10)) + ' ' + MAANDEN[+s.slice(5,7)-1].slice(0,3);
+}
+function vandaagSleutel(){
+  var d = new Date();
+  return dagSleutel(d.getFullYear(), d.getMonth()+1, d.getDate());
+}
+function ontsnap(t){
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function nieuwId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+/* ---------------------------------------------------------------
+   4. Afgeleide cijfers — alles rekent uit `st`, niets staat dubbel
+   --------------------------------------------------------------- */
+function maandVak(sleutel, soort){
+  if(!st.maanden[sleutel]) st.maanden[sleutel] = {};
+  if(!st.maanden[sleutel][soort]) st.maanden[sleutel][soort] = {bedrag:{}, stand:{}};
+  var v = st.maanden[sleutel][soort];
+  if(!v.bedrag) v.bedrag = {};
+  if(!v.stand)  v.stand  = {};
+  return v;
+}
+
+function binnenLooptijd(b, sleutel){
+  if(b.van && sleutel < b.van) return false;
+  if(b.tot && sleutel > b.tot) return false;
+  return true;
+}
+
+/* Het budget van een maand: standaardbedrag, tenzij je het voor die maand
+   hebt overschreven; aan, tenzij je het voor die maand hebt uitgezet. */
+function budgetVanMaand(sleutel){
+  var vak = maandVak(sleutel, 'budget');
+  return st.categorieen.map(function(c){
+    var aan = vak.stand[c.id] !== undefined ? vak.stand[c.id] : true;
+    return {
+      cat: c,
+      standaard: c.bedrag,
+      bedrag: vak.bedrag[c.id] !== undefined ? vak.bedrag[c.id] : c.bedrag,
+      aan: aan
+    };
+  });
+}
+
+function inkomstenVanMaand(sleutel){
+  var vak = maandVak(sleutel, 'inkomen');
+  return st.bronnen.map(function(b){
+    var standaardAan = b.afgeleid ? true : binnenLooptijd(b, sleutel);
+    var aan = vak.stand[b.id] !== undefined ? vak.stand[b.id] : standaardAan;
+    var bedrag = b.afgeleid ? werkVanMaand(sleutel) : (vak.bedrag[b.id] !== undefined ? vak.bedrag[b.id] : b.bedrag);
+    return {
+      bron: b,
+      standaard: b.bedrag,
+      standaardAan: standaardAan,
+      bedrag: bedrag,
+      inPond: b.valuta === 'EUR' ? bedrag * st.koers : bedrag,
+      aan: aan
+    };
+  });
+}
+
+function uitgavenVanMaand(sleutel){
+  return st.uitgaven.filter(function(u){ return u.datum.slice(0,7) === sleutel; })
+                    .sort(function(a,b){ return a.datum < b.datum ? 1 : a.datum > b.datum ? -1 : 0; });
+}
+function klussenVanMaand(sleutel){
+  return st.klussen.filter(function(k){ return k.datum.slice(0,7) === sleutel; })
+                   .sort(function(a,b){ return a.datum < b.datum ? 1 : -1; });
+}
+function werkVanMaand(sleutel){
+  return klussenVanMaand(sleutel).reduce(function(t,k){ return t + k.bedrag; }, 0);
+}
+
+/* Een uitgave mag in euro's of in ponden ingevoerd zijn. Overal waar met een
+   uitgave gerékend wordt, gaat het door deze ene functie heen — dan kan er
+   nergens per ongeluk een euro als pond meegeteld worden. Uitgaven zonder
+   valuta komen uit een oudere versie en waren altijd in ponden. */
+function uitInPond(u){
+  return u.valuta === 'EUR' ? u.bedrag * st.koers : u.bedrag;
+}
+
+function cijfersVanMaand(sleutel){
+  var budget = budgetVanMaand(sleutel);
+  var inkomen = inkomstenVanMaand(sleutel);
+  var uitgaven = uitgavenVanMaand(sleutel);
+
+  var perCat = {};
+  uitgaven.forEach(function(u){ perCat[u.cat] = (perCat[u.cat] || 0) + uitInPond(u); });
+
+  var budgetSom  = budget.filter(function(r){ return r.aan; })
+                         .reduce(function(t,r){ return t + r.bedrag; }, 0);
+  var inkomenSom = inkomen.filter(function(r){ return r.aan; })
+                          .reduce(function(t,r){ return t + r.inPond; }, 0);
+  var uitSom     = uitgaven.reduce(function(t,u){ return t + uitInPond(u); }, 0);
+
+  return {
+    sleutel: sleutel, budget: budget, inkomen: inkomen, uitgaven: uitgaven, perCat: perCat,
+    budgetSom: budgetSom, inkomenSom: inkomenSom, uitSom: uitSom,
+    teBesteden: budgetSom - uitSom,
+    overAanEind: inkomenSom - uitSom
+  };
+}
+
+/* ---------------------------------------------------------------
+   5. Tekenen
+   --------------------------------------------------------------- */
+function $(id){ return document.getElementById(id); }
+
+function tekenAlles(){
+  var c = cijfersVanMaand(gekozenMaand);
+  document.querySelectorAll('.dezemaand').forEach(function(el){
+    el.textContent = el.tagName === 'H2' ? maandVol(gekozenMaand) : maandNaam(gekozenMaand);
+  });
+  $('maandlabel').textContent = maandVol(gekozenMaand);
+  tekenHero(c);
+  tekenBalken(c);
+  tekenBudgetrijen(c);
+  tekenBronnen(c);
+  tekenKlussen(c);
+  tekenInkomstenrijen(c);
+  tekenPosten(c);
+  tekenKalender(c);
+  vulCategorieKeuze();
+  toonMuntUitleg();
+  $('koers').value = st.koers.toFixed(2);
+}
+
+function tekenHero(c){
+  $('heroBedrag').textContent = pondMin(c.teBesteden);
+
+  var deel = c.budgetSom > 0 ? c.uitSom / c.budgetSom : 0;
+  var procent = Math.round(deel * 100);
+  var omtrek = 2 * Math.PI * 48;
+  var vol = Math.min(deel, 1) * omtrek;
+  $('ringBoog').setAttribute('stroke-dasharray', vol.toFixed(1) + ' ' + omtrek.toFixed(1));
+  $('ringBoog').setAttribute('stroke', deel > 1 ? '#FF6685' : '#D8F34B');
+  $('ringTekst').textContent = procent + '%';
+
+  /* "Nog x dagen" slaat alleen ergens op in de maand waar je nú in zit. */
+  var vandaag = vandaagSleutel();
+  var staart;
+  if(vandaag.slice(0,7) === c.sleutel){
+    var over = dagenInMaand(c.sleutel) - (+vandaag.slice(8,10));
+    staart = over === 0 ? 'last day of the month' : over + ' day' + (over===1?'':'s') + ' left';
+  } else {
+    staart = '';
+  }
+  /* Het staartje krijgt zijn eigen regel-eenheid, anders zakt bij een lang
+     budgetbedrag alleen het woord "left" naar de volgende regel. */
+  $('heroKlein').innerHTML = 'of your ' + pond(c.budgetSom) + ' budget' +
+    (staart ? ' <span class="nowrap">&middot; ' + staart + '</span>' : '');
+
+  $('statInkomen').textContent = pond(c.inkomenSom);
+  $('statBudget').textContent  = pond(c.budgetSom);
+  $('statUit').textContent     = pond(c.uitSom);
+  $('statOver').textContent    = pondMin(c.overAanEind);
+}
+
+function tekenBalken(c){
+  var doel = $('balken');
+  /* Een categorie hoort in de lijst als je er budget voor hebt óf geld aan
+     hebt uitgegeven — een uitgezette post waar je tóch iets aan uitgaf mag
+     je niet stilletjes verstoppen. */
+  var rijen = c.budget.filter(function(r){
+    return (r.aan && r.bedrag > 0) || (c.perCat[r.cat.id] > 0);
+  });
+
+  if(!rijen.length){
+    doel.innerHTML = '<div class="legekaart"><div class="groot">No budget set yet</div>' +
+      '<div class="klein">Open <b>Change your budget</b> below to fill in what you want to spend each month.</div></div>';
+    $('balkenTotaal').textContent = pond(c.uitSom);
+    return;
+  }
+
+  doel.innerHTML = rijen.map(function(r){
+    var uit = c.perCat[r.cat.id] || 0;
+    var budget = r.aan ? r.bedrag : 0;
+    var over = uit - budget;
+    var breedte = budget > 0 ? Math.min(uit / budget * 100, 100) : (uit > 0 ? 100 : 0);
+    var teVeel = over > 0.005;
+
+    var kopCijfers = '<b>' + pond(uit) + '</b> / ' + (r.aan ? pond(budget).replace('£','') : 'off');
+    var baan = teVeel
+      ? '<div class="baan overschreden"><i style="width:100%"></i></div>' +
+        '<span class="badge-over">' + pond(over) + ' over budget</span>'
+      : '<div class="baan" style="background:' + r.cat.zacht + '"><i style="width:' +
+        breedte.toFixed(1) + '%;background:' + r.cat.balk + '"></i></div>';
+
+    return '<div class="cat' + (teVeel ? ' rood' : '') + '">' +
+      '<div class="catkop"><span class="ic" style="background:' + r.cat.zacht + ';color:' + r.cat.icoonkleur + '">' +
+        '<svg><use href="#' + r.cat.icoon + '"/></svg></span>' +
+      '<span class="naam">' + ontsnap(r.cat.naam) + '</span>' +
+      '<span class="cijfers">' + kopCijfers + '</span></div>' + baan + '</div>';
+  }).join('');
+
+  $('balkenTotaal').textContent = pond(c.uitSom);
+}
+
+function tekenBudgetrijen(c){
+  $('budgetrijen').innerHTML = c.budget.map(function(r){
+    var afwijkend = r.aan && Math.abs(r.bedrag - r.standaard) > 0.005;
+    var onder = !r.aan ? 'not counted in ' + maandNaam(c.sleutel)
+              : afwijkend ? 'normally ' + pond(r.standaard) : '';
+    return '<div class="budgetrij' + (r.aan ? '' : ' uitgezet') + (afwijkend ? ' gewijzigd' : '') +
+             '" data-id="' + r.cat.id + '">' +
+      '<span class="ic" style="background:' + r.cat.zacht + ';color:' + r.cat.icoonkleur + '">' +
+        '<svg><use href="#' + r.cat.icoon + '"/></svg></span>' +
+      '<span class="tekst"><div class="naam">' + ontsnap(r.cat.naam) + '</div>' +
+        '<div class="standaard">' + onder + '</div></span>' +
+      '<input inputmode="decimal" value="' + r.bedrag.toFixed(2) + '" aria-label="' + ontsnap(r.cat.naam) + ' budget">' +
+      '<button class="schakel' + (r.aan ? ' aan' : '') + '" aria-label="' + ontsnap(r.cat.naam) + ' on or off"></button>' +
+    '</div>';
+  }).join('');
+  $('budgetsom').textContent = pond(c.budgetSom);
+}
+
+function tekenBronnen(c){
+  $('bronnen').innerHTML = c.inkomen.filter(function(r){ return !r.bron.afgeleid; }).map(function(r){
+    var b = r.bron;
+    var looptijd = b.van || b.tot
+      ? (b.van ? maandNaam(b.van).slice(0,3) + ' ' + b.van.slice(0,4) : 'until') +
+        (b.tot ? ' – ' + maandNaam(b.tot).slice(0,3) + ' ' + b.tot.slice(0,4) : ' onwards') +
+        ' · ' + (b.valuta === 'EUR' ? euro(r.bedrag) : pond(r.bedrag)) + ' p/m'
+      : 'every month';
+    var rechts = r.aan
+      ? '<div class="pond">' + pond(r.inPond) + '</div>' +
+        (b.valuta === 'EUR' ? '<div class="euro">' + euro(r.bedrag) + '</div>' : '')
+      : '<div class="pond">' + (b.van && c.sleutel < b.van ? 'from ' + maandNaam(b.van).slice(0,3) : 'not this month') + '</div>';
+
+    return '<div class="bron' + (r.aan ? '' : ' uit') + '">' +
+      '<span class="ic" style="background:' + b.zacht + ';color:' + b.icoonkleur + '">' +
+        '<svg><use href="#' + b.icoon + '"/></svg></span>' +
+      '<span class="tekst"><span class="naam">' + ontsnap(b.naam) + '</span>' +
+        '<span class="looptijd">' + looptijd + '</span></span>' +
+      '<span class="geld">' + rechts + '</span></div>';
+  }).join('');
+
+  var werk = c.inkomen.filter(function(r){ return r.bron.afgeleid; })[0];
+  $('werkKop').textContent = pond(werk ? werk.inPond : 0);
+  $('inkomenTotaal').textContent = pond(c.inkomenSom);
+
+  /* De voetnoot legt uit waaróm dit maandbedrag zo is; dat verschilt per
+     maand, dus schrijven we hem hier op maat. */
+  var stukjes = [];
+  c.inkomen.forEach(function(r){
+    var b = r.bron;
+    if(b.afgeleid || r.aan) return;
+    if(b.van && c.sleutel < b.van)
+      stukjes.push(ontsnap(b.naam) + ' only starts in ' + maandNaam(b.van) + ' ' + b.van.slice(0,4));
+    else if(b.tot && c.sleutel > b.tot)
+      stukjes.push(ontsnap(b.naam) + ' stopped after ' + maandNaam(b.tot) + ' ' + b.tot.slice(0,4));
+  });
+  $('inkomenVoetnoot').innerHTML =
+    'Work counts per month: whatever you earn in ' + maandNaam(c.sleutel) +
+    ' is added to this month&rsquo;s income, and so to your &lsquo;left to spend&rsquo;.' +
+    (stukjes.length ? ' This month is leaner because ' + stukjes.join(', and ') + '.' : '');
+}
+
+function tekenKlussen(c){
+  var lijst = klussenVanMaand(c.sleutel);
+  var doel = $('klussen');
+  if(!lijst.length){
+    doel.innerHTML = '<div class="werkleeg"><div class="groot">Nothing earned in ' +
+      maandNaam(c.sleutel) + ' yet</div>' +
+      '<div class="klein">Add a job as soon as you get paid.</div></div>';
+  } else {
+    doel.innerHTML = lijst.map(function(k){
+      return '<div class="klus" data-id="' + k.id + '">' +
+        '<span class="tekst"><div class="wie">' + ontsnap(k.oms) + '</div>' +
+          '<div class="wanneer">' + kortDatum(k.datum) + '</div></span>' +
+        '<span class="op">' + pond(k.bedrag) + '</span>' +
+        '<button class="klusweg" aria-label="Delete this job"><svg><use href="#i-prullenbak"/></svg></button>' +
+      '</div>';
+    }).join('');
+  }
+  $('werkTotaal').textContent = pond(werkVanMaand(c.sleutel));
+}
+
+function tekenInkomstenrijen(c){
+  $('inkomstenrijen').innerHTML = c.inkomen.map(function(r){
+    var b = r.bron;
+    var afwijkend = r.aan && !b.afgeleid && Math.abs(r.bedrag - r.standaard) > 0.005;
+    var regel;
+    if(!r.aan)          regel = 'not counted in ' + maandNaam(c.sleutel);
+    else if(b.afgeleid) regel = 'from the jobs you logged';
+    else if(b.valuta === 'EUR') regel = '= ' + pond(r.inPond);
+    else                regel = '';
+    if(afwijkend) regel += (regel ? ' · ' : '') + 'normally ' +
+      (b.valuta === 'EUR' ? euro(r.standaard) : pond(r.standaard));
+
+    return '<div class="budgetrij inkomstenrij' + (r.aan ? '' : ' uitgezet') + (afwijkend ? ' gewijzigd' : '') +
+             '" data-id="' + b.id + '">' +
+      '<span class="ic" style="background:' + b.zacht + ';color:' + b.icoonkleur + '">' +
+        '<svg><use href="#' + b.icoon + '"/></svg></span>' +
+      '<span class="tekst"><div class="naam">' + ontsnap(b.naam) + '</div>' +
+        '<div class="omgerekend">' + regel + '</div></span>' +
+      '<span class="munt">' + (b.valuta === 'EUR' ? '€' : '£') + '</span>' +
+      '<input inputmode="decimal" value="' + r.bedrag.toFixed(2) + '"' +
+        (b.afgeleid ? ' readonly' : '') + ' aria-label="' + ontsnap(b.naam) + ' amount">' +
+      '<button class="schakel' + (r.aan ? ' aan' : '') + '" aria-label="' + ontsnap(b.naam) + ' on or off"></button>' +
+    '</div>';
+  }).join('');
+  $('inkomstensom').textContent = pond(c.inkomenSom);
+}
+
+function catVan(id){
+  return st.categorieen.filter(function(c){ return c.id === id; })[0] ||
+         {id:id, naam:'Unknown', icoon:'i-rnd', zacht:'#E7DCE8', icoonkleur:'var(--rnd)', balk:'var(--rnd)'};
+}
+
+function postHtml(u, metDatum){
+  var cat = catVan(u.cat);
+  var onder = (metDatum ? kortDatum(u.datum) + ' · ' : '') + ontsnap(cat.naam);
+  /* Bij een euro-uitgave staat rechts het omgerekende pondbedrag; wat je
+     werkelijk betaalde hoort er dan bij, anders herken je hem niet terug. */
+  if(u.valuta === 'EUR') onder += ' · ' + euro(u.bedrag);
+  return '<div class="post" data-id="' + u.id + '">' +
+    '<button class="postrij" type="button" aria-expanded="false">' +
+      '<span class="ic" style="background:' + cat.zacht + ';color:' + cat.icoonkleur + '">' +
+        '<svg><use href="#' + cat.icoon + '"/></svg></span>' +
+      '<span class="tekst"><div class="oms">' + ontsnap(u.oms) + '</div>' +
+        '<div class="cat2">' + onder + '</div></span>' +
+      '<span class="bedrag">' + pond(uitInPond(u)) + '</span>' +
+      '<span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>' +
+    '<div class="postacties">' +
+      '<button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>' +
+      '<button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>' +
+    '</div></div>';
+}
+
+function tekenPosten(c){
+  var doel = $('postenlijst');
+  if(!c.uitgaven.length){
+    doel.innerHTML = '<div class="legekaart"><div class="groot">Nothing logged in ' +
+      maandNaam(c.sleutel) + '</div>' +
+      '<div class="klein">Add your first expense with the form above.</div></div>';
+  } else {
+    /* Deze week apart zetten helpt alleen als je in de huidige maand kijkt. */
+    var vandaag = vandaagSleutel();
+    var grens = null;
+    if(vandaag.slice(0,7) === c.sleutel){
+      var d = new Date(vandaag);
+      d.setDate(d.getDate() - 6);
+      grens = dagSleutel(d.getFullYear(), d.getMonth()+1, d.getDate());
+    }
+    var recent = grens ? c.uitgaven.filter(function(u){ return u.datum >= grens; }) : [];
+    var ouder  = grens ? c.uitgaven.filter(function(u){ return u.datum <  grens; }) : c.uitgaven;
+
+    var h = '';
+    if(recent.length) h += '<div class="dagkop2">This week</div>' + recent.map(function(u){ return postHtml(u,true); }).join('');
+    if(ouder.length)  h += '<div class="dagkop2">' + (recent.length ? 'Earlier this month' : 'This month') + '</div>' +
+                           ouder.map(function(u){ return postHtml(u,true); }).join('');
+    doel.innerHTML = h;
+  }
+  $('aantalposten').textContent = c.uitgaven.length;
+  $('somposten').textContent = pond(c.uitSom);
+  $('somtotaal').textContent = pond(c.uitSom);
+}
+
+function tekenKalender(c){
+  var d = sleutelNaarDelen(c.sleutel);
+  var eerste = new Date(d.jaar, d.maand-1, 1);
+  var aantal = dagenInMaand(c.sleutel);
+  /* Maandag als eerste kolom: JS geeft zondag=0, dus even omrekenen. */
+  var start = (eerste.getDay() + 6) % 7;
+
+  var perDag = {};
+  c.uitgaven.forEach(function(u){ perDag[u.datum] = (perDag[u.datum] || 0) + uitInPond(u); });
+
+  var h = ['M','T','W','T','F','S','S'].map(function(k){
+    return '<div class="kalkop">' + k + '</div>';
+  }).join('');
+
+  var vorige = maandOpschuiven(c.sleutel, -1);
+  var vorigeLengte = dagenInMaand(vorige);
+  for(var i = start; i > 0; i--)
+    h += '<div class="dag buiten"><div class="nr">' + (vorigeLengte - i + 1) + '</div><div class="bd">·</div><div class="stip geen"></div></div>';
+
+  var vandaag = vandaagSleutel();
+  for(var dag = 1; dag <= aantal; dag++){
+    var sl = dagSleutel(d.jaar, d.maand, dag);
+    var bedrag = perDag[sl] || 0;
+    var weekdag = new Date(d.jaar, d.maand-1, dag).getDay();
+    var klas = 'dag';
+    if(bedrag >= 100) klas += ' vol';
+    else if(bedrag > 0) klas += ' middel';
+    else if(weekdag === 0 || weekdag === 6) klas += ' weekend';
+    if(sl === vandaag) klas += ' vandaag';
+    if(sl === gekozenDag) klas += ' gekozen';
+
+    h += '<div class="' + klas + '" data-dag="' + sl + '">' +
+      '<div class="nr">' + dag + '</div>' +
+      '<div class="bd' + (bedrag ? '' : ' leeg') + '">' + (bedrag ? Math.round(bedrag) : '—') + '</div>' +
+      '<div class="stip' + (st.notities[sl] ? '' : ' geen') + '"></div></div>';
+  }
+
+  var rest = (7 - ((start + aantal) % 7)) % 7;
+  for(var j = 1; j <= rest; j++)
+    h += '<div class="dag buiten"><div class="nr">' + j + '</div><div class="bd">·</div><div class="stip geen"></div></div>';
+
+  $('kalender').innerHTML = h;
+
+  var stille = aantal - Object.keys(perDag).filter(function(k){ return k.slice(0,7) === c.sleutel; }).length;
+  $('kalSub').textContent = pond(c.uitSom) + ' spent · ' + c.uitgaven.length + ' expense' +
+    (c.uitgaven.length === 1 ? '' : 's') + ' · ' + stille + ' day' + (stille === 1 ? '' : 's') + ' with nothing spent';
+
+  tekenDagdetail(c);
+}
+
+function tekenDagdetail(c){
+  var doel = $('dagdetail');
+  if(!gekozenDag || gekozenDag.slice(0,7) !== c.sleutel){
+    doel.innerHTML = '<div class="legekaart"><div class="groot">Tap a day</div>' +
+      '<div class="klein">You will see what you spent that day, and you can leave yourself a note.</div></div>';
+    return;
+  }
+  var opDag = c.uitgaven.filter(function(u){ return u.datum === gekozenDag; });
+  var som = opDag.reduce(function(t,u){ return t + uitInPond(u); }, 0);
+  var d = new Date(gekozenDag);
+
+  doel.innerHTML =
+    '<div class="datumkop"><span class="d">' + DAGEN[d.getDay()] + ' ' + (+gekozenDag.slice(8,10)) + ' ' +
+      maandNaam(c.sleutel) + '</span><span class="t">' + pond(som) + '</span></div>' +
+    (opDag.length
+      ? opDag.map(function(u){ return postHtml(u, false); }).join('')
+      : '<div class="legekaart" style="padding:10px 0 4px"><div class="klein">Nothing spent on this day.</div></div>') +
+    '<textarea class="notitieveld" id="notitieveld" placeholder="Note to self — e.g. book train tickets before noon">' +
+      ontsnap(st.notities[gekozenDag] || '') + '</textarea>';
+}
+
+/* ---------------------------------------------------------------
+   6. De terugdraaibalk
+   --------------------------------------------------------------- */
+var terugActie = null, terugKlok = null;
+
+function meld(tekst, actie){
+  $('terugtekst').innerHTML = tekst;
+  terugActie = actie || null;
+  $('terugknop').style.display = actie ? '' : 'none';
+  $('terugbalk').classList.add('zichtbaar');
+  clearTimeout(terugKlok);
+  terugKlok = setTimeout(function(){ $('terugbalk').classList.remove('zichtbaar'); }, 6000);
+}
+
+$('terugknop').addEventListener('click', function(){
+  if(terugActie) terugActie();
+  terugActie = null;
+  $('terugbalk').classList.remove('zichtbaar');
+  clearTimeout(terugKlok);
+});
+
+/* ---------------------------------------------------------------
+   7. Bediening
+   --------------------------------------------------------------- */
+document.querySelectorAll('.tabbalk button').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.tabbalk button').forEach(function(x){ x.classList.remove('actief'); });
+    document.querySelectorAll('.paneel').forEach(function(p){ p.classList.remove('actief'); });
+    b.classList.add('actief');
+    $(b.dataset.tab).classList.add('actief');
+    window.scrollTo(0,0);
+  });
+});
+
+$('vorigemaand').addEventListener('click', function(){ wisselMaand(-1); });
+$('volgendemaand').addEventListener('click', function(){ wisselMaand(1); });
+$('maandlabel').addEventListener('click', function(){
+  gekozenMaand = maandSleutel(new Date());
+  gekozenDag = null;
+  tekenAlles();
+});
+function wisselMaand(stappen){
+  gekozenMaand = maandOpschuiven(gekozenMaand, stappen);
+  gekozenDag = null;
+  stopBewerken();
+  tekenAlles();
+}
+
+/* --- budget- en inkomstenrijen (gedelegeerd, want ze worden hertekend) --- */
+function rijBediening(houderId, soort){
+  var houder = $(houderId);
+
+  houder.addEventListener('click', function(e){
+    var knop = e.target.closest('.schakel');
+    if(!knop || !houder.contains(knop)) return;
+    var rij = knop.closest('[data-id]');
+    var vak = maandVak(gekozenMaand, soort);
+    var nu = !knop.classList.contains('aan');
+    vak.stand[rij.dataset.id] = nu;
+    bewaar();
+    tekenAlles();
+  });
+
+  /* Tijdens het typen alleen het totaal bijwerken; volledig hertekenen zou
+     de cursor uit het veld gooien waar je in bezig bent. */
+  houder.addEventListener('input', function(e){
+    if(e.target.tagName !== 'INPUT' || e.target.readOnly) return;
+    var rij = e.target.closest('[data-id]');
+    var vak = maandVak(gekozenMaand, soort);
+    vak.bedrag[rij.dataset.id] = naarGetal(e.target.value);
+    bewaar();
+    merkRijAan(rij, soort);
+    werkTotalenBij();
+  });
+}
+
+/* Het "changed"-label hoort meteen te verschijnen, niet pas na een hertekening.
+   Daarom zetten we het hier met de hand op de rij waarin getypt wordt. */
+function merkRijAan(rij, soort){
+  var lijst = soort === 'budget' ? st.categorieen : st.bronnen;
+  var item = lijst.filter(function(x){ return x.id === rij.dataset.id; })[0];
+  if(!item) return;
+  var nu = naarGetal(rij.querySelector('input').value);
+  var afwijkend = !rij.classList.contains('uitgezet') && Math.abs(nu - item.bedrag) > 0.005;
+  rij.classList.toggle('gewijzigd', afwijkend);
+
+  var euroBron = soort === 'inkomen' && item.valuta === 'EUR';
+  var onder = rij.querySelector(soort === 'budget' ? '.standaard' : '.omgerekend');
+  if(!onder) return;
+  var normaal = 'normally ' + (euroBron ? euro(item.bedrag) : pond(item.bedrag));
+  if(soort === 'budget'){
+    onder.textContent = afwijkend ? normaal : '';
+  } else {
+    var links = euroBron ? '= ' + pond(nu * st.koers) : '';
+    onder.textContent = afwijkend ? (links ? links + ' · ' : '') + normaal : links;
+  }
+}
+
+/* Tijdens het typen mag alles meebewegen wat geen invoerveld is: het
+   dashboard erboven zou anders een verouderd bedrag blijven tonen. */
+function werkTotalenBij(){
+  var c = cijfersVanMaand(gekozenMaand);
+  $('budgetsom').textContent = pond(c.budgetSom);
+  $('inkomstensom').textContent = pond(c.inkomenSom);
+  tekenHero(c);
+  tekenBalken(c);
+  tekenBronnen(c);
+}
+
+rijBediening('budgetrijen', 'budget');
+rijBediening('inkomstenrijen', 'inkomen');
+
+/* "Maak dit mijn standaard": de bedragen van deze maand worden het nieuwe
+   normaal, en de maandafwijking mag dan weg. */
+function maakStandaard(soort, lijst){
+  var vak = maandVak(gekozenMaand, soort);
+  lijst.forEach(function(item){
+    if(item.afgeleid) return;
+    if(vak.bedrag[item.id] !== undefined){
+      item.bedrag = vak.bedrag[item.id];
+      delete vak.bedrag[item.id];
+    }
+  });
+}
+
+$('budgetopslaan').addEventListener('click', function(){
+  if($('budgetstandaard').classList.contains('aan')){
+    maakStandaard('budget', st.categorieen);
+    $('budgetstandaard').classList.remove('aan');
+    meld('Saved as your new monthly budget');
+  } else {
+    meld('Saved for ' + maandNaam(gekozenMaand));
+  }
+  bewaar();
+  $('budgetblok').open = false;
+  tekenAlles();
+});
+
+$('inkomstenopslaan').addEventListener('click', function(){
+  if($('inkomstenstandaard').classList.contains('aan')){
+    maakStandaard('inkomen', st.bronnen);
+    $('inkomstenstandaard').classList.remove('aan');
+    meld('Saved as your new monthly income');
+  } else {
+    meld('Saved for ' + maandNaam(gekozenMaand));
+  }
+  bewaar();
+  $('inkomstenblok').open = false;
+  tekenAlles();
+});
+
+document.querySelectorAll('.standaardrij .schakel').forEach(function(s){
+  s.addEventListener('click', function(){ this.classList.toggle('aan'); });
+});
+
+/* --- nieuwe categorie of bron erbij ---
+   Het invulrijtje staat verstopt in de pagina en klapt open onder de
+   +-knop. Zo blijft de vraag zichtbaar naast de lijst waar het antwoord
+   in terechtkomt. */
+function nieuwrijBediening(opties){
+  var rij = $(opties.rij);
+
+  function sluit(){
+    rij.hidden = true;
+    opties.velden.forEach(function(id){ $(id).value = ''; });
+  }
+
+  $(opties.knop).addEventListener('click', function(){
+    rij.hidden = !rij.hidden;
+    if(!rij.hidden) $(opties.velden[0]).focus();
+  });
+
+  $(opties.af).addEventListener('click', sluit);
+
+  $(opties.klaar).addEventListener('click', function(){
+    var naam = $(opties.velden[0]).value.trim();
+    /* Zonder naam is de rij later niet terug te vinden; dat is het enige dat
+       echt moet. Een bedrag mag je nu overslaan en later invullen. */
+    if(!naam){ $(opties.velden[0]).focus(); return; }
+    opties.maak(naam, naarGetal($(opties.velden[1]).value));
+    bewaar();
+    sluit();
+    tekenAlles();
+    $(opties.blok).open = true;
+    meld(ontsnap(naam) + ' added');
+  });
+
+  /* Enter in een van de velden doet hetzelfde as de knop. */
+  opties.velden.forEach(function(id){
+    $(id).addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ e.preventDefault(); $(opties.klaar).click(); }
+    });
+  });
+}
+
+nieuwrijBediening({
+  knop:'nieuwecategorie', rij:'nieuwecategorierij', blok:'budgetblok',
+  klaar:'nieuwecategorieklaar', af:'nieuwecategorieaf',
+  velden:['nieuwecategorienaam', 'nieuwecategoriebedrag'],
+  maak:function(naam, bedrag){
+    var kleur = PALET[st.categorieen.length % PALET.length];
+    st.categorieen.push({id:'c' + nieuwId(), naam:naam, icoon:kleur.icoon, zacht:kleur.zacht,
+                         icoonkleur:kleur.icoonkleur, balk:kleur.balk, bedrag:bedrag});
+  }
+});
+
+/* De munt is een keuze tussen twee knoppen, niet tussen OK en Annuleren. */
+var nieuweMunt = 'EUR';
+['muntEUR', 'muntGBP'].forEach(function(id){
+  $(id).addEventListener('click', function(){
+    nieuweMunt = this.dataset.munt;
+    $('muntEUR').classList.toggle('aan', nieuweMunt === 'EUR');
+    $('muntGBP').classList.toggle('aan', nieuweMunt === 'GBP');
+  });
+});
+
+nieuwrijBediening({
+  knop:'nieuwebron', rij:'nieuwebronrij', blok:'inkomstenblok',
+  klaar:'nieuwebronklaar', af:'nieuwebronaf',
+  velden:['nieuwebronnaam', 'nieuwebronbedrag'],
+  maak:function(naam, bedrag){
+    var kleur = PALET[st.bronnen.length % PALET.length];
+    st.bronnen.push({id:'b' + nieuwId(), naam:naam, icoon:kleur.icoon, zacht:kleur.zacht,
+                     icoonkleur:kleur.icoonkleur, valuta:nieuweMunt,
+                     bedrag:bedrag, van:null, tot:null});
+  }
+});
+
+/* --- de wisselkoers --- */
+$('koers').addEventListener('input', function(){
+  var k = naarGetal(this.value);
+  if(k > 0){ st.koers = k; bewaar(); tekenAlles(); }
+});
+
+/* --- uitgaven toevoegen en wijzigen --- */
+function toonFout(rijId, veldId, tekst){
+  $(rijId).classList.add('mis');
+  $(veldId).textContent = tekst;
+}
+function wisFout(rijId){ $(rijId).classList.remove('mis'); }
+
+function stopBewerken(){
+  bewerktId = null;
+  $('bewerkbalk').classList.remove('aan');
+  $('formulierkop').textContent = 'Add expense';
+  $('uitOpslaan').textContent = 'Add';
+  $('uitOms').value = '';
+  $('uitBedrag').value = '';
+  zetUitMunt('GBP');
+  wisFout('uitFoutrij');
+}
+
+$('bewerkstop').addEventListener('click', function(){ stopBewerken(); });
+
+/* --- pond of euro bij een uitgave ---
+   Je betaalt niet alles in Londen: een treinkaartje naar huis of een
+   webwinkel rekent in euro's af. Je vult in wat er van je rekening ging, de
+   app rekent het om naar ponden voor de budgetten. */
+var uitMunt = 'GBP';
+
+function zetUitMunt(munt){
+  uitMunt = munt;
+  $('uitMuntGBP').classList.toggle('aan', munt === 'GBP');
+  $('uitMuntEUR').classList.toggle('aan', munt === 'EUR');
+  $('uitBedrag').placeholder = munt === 'EUR' ? '€0.00' : '£0.00';
+  toonMuntUitleg();
+}
+
+function toonMuntUitleg(){
+  var vak = $('uitMuntUitleg');
+  var bedrag = naarGetal($('uitBedrag').value);
+  if(uitMunt !== 'EUR' || bedrag <= 0){ vak.hidden = true; return; }
+  vak.hidden = false;
+  vak.textContent = euro(bedrag) + ' counts as ' + pond(bedrag * st.koers) +
+                    ' at your rate of ' + st.koers.toFixed(2);
+}
+
+['uitMuntGBP', 'uitMuntEUR'].forEach(function(id){
+  $(id).addEventListener('click', function(){ zetUitMunt(this.dataset.munt); });
+});
+$('uitBedrag').addEventListener('input', toonMuntUitleg);
+
+$('uitOpslaan').addEventListener('click', function(){
+  var datum = leesDatum($('uitDatum').value);
+  var bedrag = naarGetal($('uitBedrag').value);
+  var oms = $('uitOms').value.trim();
+  var teken = uitMunt === 'EUR' ? '€' : '£';
+
+  if(!datum)      return toonFout('uitFoutrij','uitFout','Use a date like 24/09/2026');
+  if(bedrag <= 0) return toonFout('uitFoutrij','uitFout','Fill in an amount above ' + teken + '0');
+  if(!oms)        return toonFout('uitFoutrij','uitFout','Give it a short description');
+  wisFout('uitFoutrij');
+
+  if(bewerktId){
+    var u = st.uitgaven.filter(function(x){ return x.id === bewerktId; })[0];
+    /* Zodra je een voorbeeldregel aanpast is hij van jou; het merkje mag weg,
+       zodat "Load example month" hem later niet alsnog opruimt. */
+    if(u){ u.datum = datum; u.bedrag = bedrag; u.oms = oms; u.cat = $('uitCat').value;
+           u.valuta = uitMunt; delete u.voorbeeld; }
+    meld('<b>' + ontsnap(oms) + '</b> updated');
+    stopBewerken();
+  } else {
+    st.uitgaven.push({id:nieuwId(), datum:datum, bedrag:bedrag, oms:oms,
+                      cat:$('uitCat').value, valuta:uitMunt});
+    meld('<b>' + ontsnap(oms) + '</b> added');
+    $('uitOms').value = '';
+    $('uitBedrag').value = '';
+    toonMuntUitleg();
+  }
+
+  /* Ging de uitgave over een andere maand, spring daar dan heen — anders
+     lijkt het alsof je invoer nergens landde. */
+  if(datum.slice(0,7) !== gekozenMaand) gekozenMaand = datum.slice(0,7);
+  bewaar();
+  tekenAlles();
+});
+
+/* Klikken op een post: openklappen, wijzigen of weggooien. Gedelegeerd op
+   document, want posts staan in twee panelen en worden steeds hertekend. */
+document.addEventListener('click', function(e){
+  var rij = e.target.closest('.postrij');
+  if(rij){
+    var post = rij.closest('.post');
+    var open = post.classList.toggle('open');
+    rij.setAttribute('aria-expanded', open ? 'true' : 'false');
+    return;
+  }
+
+  var wijzig = e.target.closest('.postacties .wijzig');
+  if(wijzig){
+    var p = wijzig.closest('.post');
+    var u = st.uitgaven.filter(function(x){ return x.id === p.dataset.id; })[0];
+    if(!u) return;
+    bewerktId = u.id;
+    $('uitDatum').value = toonDatum(u.datum);
+    $('uitBedrag').value = u.bedrag.toFixed(2);
+    $('uitOms').value = u.oms;
+    $('uitCat').value = u.cat;
+    zetUitMunt(u.valuta === 'EUR' ? 'EUR' : 'GBP');
+    $('formulierkop').textContent = 'Edit expense';
+    $('uitOpslaan').textContent = 'Save changes';
+    $('bewerktekst').textContent = 'Editing “' + u.oms + '”';
+    $('bewerkbalk').classList.add('aan');
+    $('uitgaveblok').open = true;
+    document.querySelector('[data-tab="trans"]').click();
+    $('uitgaveblok').scrollIntoView({behavior:'smooth', block:'start'});
+    return;
+  }
+
+  var weg = e.target.closest('.postacties .weg');
+  if(weg){
+    var pw = weg.closest('.post');
+    var idx = -1;
+    st.uitgaven.forEach(function(x,i){ if(x.id === pw.dataset.id) idx = i; });
+    if(idx < 0) return;
+    var eruit = st.uitgaven.splice(idx, 1)[0];
+    if(bewerktId === eruit.id) stopBewerken();
+    bewaar();
+    tekenAlles();
+    meld('<b>' + ontsnap(eruit.oms) + '</b> deleted', function(){
+      st.uitgaven.push(eruit);
+      bewaar();
+      tekenAlles();
+    });
+    return;
+  }
+
+  var klusweg = e.target.closest('.klusweg');
+  if(klusweg){
+    var k = klusweg.closest('.klus');
+    var ki = -1;
+    st.klussen.forEach(function(x,i){ if(x.id === k.dataset.id) ki = i; });
+    if(ki < 0) return;
+    var kEruit = st.klussen.splice(ki, 1)[0];
+    bewaar();
+    tekenAlles();
+    meld('Job deleted', function(){ st.klussen.push(kEruit); bewaar(); tekenAlles(); });
+    return;
+  }
+
+  var dag = e.target.closest('.dag');
+  if(dag && dag.dataset.dag){
+    gekozenDag = gekozenDag === dag.dataset.dag ? null : dag.dataset.dag;
+    tekenAlles();
+    if(gekozenDag) $('dagdetail').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+});
+
+/* --- werk bijhouden --- */
+$('klusToevoegen').addEventListener('click', function(){
+  var datum = leesDatum($('klusDatum').value);
+  var bedrag = naarGetal($('klusBedrag').value);
+  var oms = $('klusOms').value.trim() || 'Work';
+
+  if(!datum)      return toonFout('klusFoutrij','klusFout','Use a date like 24/09/2026');
+  if(bedrag <= 0) return toonFout('klusFoutrij','klusFout','Fill in an amount above £0');
+  wisFout('klusFoutrij');
+
+  st.klussen.push({id:nieuwId(), datum:datum, bedrag:bedrag, oms:oms});
+  $('klusBedrag').value = '';
+  $('klusOms').value = '';
+  if(datum.slice(0,7) !== gekozenMaand) gekozenMaand = datum.slice(0,7);
+  bewaar();
+  tekenAlles();
+  meld('Job added — ' + pond(bedrag));
+});
+
+/* --- notitie bij een dag --- */
+$('dagdetail').addEventListener('input', function(e){
+  if(e.target.id !== 'notitieveld' || !gekozenDag) return;
+  var t = e.target.value.trim();
+  if(t) st.notities[gekozenDag] = t;
+  else  delete st.notities[gekozenDag];
+  bewaar();
+  /* Alleen het stipje in de kalender hoeft bij; niet hertekenen tijdens typen. */
+  var cel = document.querySelector('.dag[data-dag="' + gekozenDag + '"] .stip');
+  if(cel) cel.classList.toggle('geen', !t);
+});
+
+/* --- voorbeeldmaand en opnieuw beginnen --- */
+$('voorbeeldknop').addEventListener('click', function(){
+  var m = gekozenMaand;
+  var v = [
+    [1,750,'Rent — Hackney','huur'], [2,48.20,'Tesco weekly shop','bood'],
+    [3,24,'Gym membership','gym'],   [4,42.50,'Drinks in Shoreditch','leuk'],
+    [5,16.90,'Bike hire — monthly','fiets'], [7,10,'Wifi — Community Fibre','wifi'],
+    [9,61.35,"Sainsbury's groceries",'bood'], [11,119.99,'Winter coat, Zara','kled'],
+    [12,35,'Roundhouse gig','leuk'], [14,72.40,'Octopus Energy','gwl'],
+    [16,53.10,'Tesco groceries','bood'], [19,58.75,'Brunch + Tate Modern','leuk'],
+    [22,64.67,'IHS health surcharge','ihs'], [24,30,'Oyster top-up','rnd']
+  ];
+  var d = sleutelNaarDelen(m);
+  var lengte = dagenInMaand(m);
+
+  /* Twee keer op de knop hoort niet twee keer dezelfde maand op te leveren.
+     Voorbeelduitgaven dragen een merkje, en dat merkje ruimen we hier eerst
+     op — je eigen uitgaven hebben het niet en blijven dus staan. */
+  var oudeVoorbeelden = st.uitgaven.filter(function(u){ return u.voorbeeld; });
+  st.uitgaven = st.uitgaven.filter(function(u){ return !u.voorbeeld; });
+
+  var nieuw = [];
+  v.forEach(function(r){
+    if(r[0] > lengte) return;
+    nieuw.push({id:nieuwId(), datum:dagSleutel(d.jaar, d.maand, r[0]), bedrag:r[1],
+                oms:r[2], cat:r[3], voorbeeld:true});
+  });
+  st.uitgaven = st.uitgaven.concat(nieuw);
+  st.notities[dagSleutel(d.jaar, d.maand, Math.min(24, lengte))] =
+    'Book Brighton for Friday — train tickets are cheaper before noon.';
+  bewaar();
+  tekenAlles();
+  meld(oudeVoorbeelden.length ? 'Example month reloaded' : 'Example month loaded', function(){
+    var weg = {};
+    nieuw.forEach(function(u){ weg[u.id] = true; });
+    st.uitgaven = st.uitgaven.filter(function(u){ return !weg[u.id]; }).concat(oudeVoorbeelden);
+    bewaar();
+    tekenAlles();
+  });
+});
+
+$('wisknop').addEventListener('click', function(){
+  if(!confirm('This deletes every expense, job and note on this phone, and puts all budgets back to their starting amounts.\n\nThere is no undo. Are you sure?')) return;
+  st = verseStaat();
+  gekozenMaand = maandSleutel(new Date());
+  gekozenDag = null;
+  stopBewerken();
+  bewaar();
+  vulCategorieKeuze();
+  tekenAlles();
+});
+
+/* ---------------------------------------------------------------
+   8. Opstarten
+   --------------------------------------------------------------- */
+/* Deze keuzelijst wordt bij elke hertekening opnieuw gevuld, zodat een pas
+   toegevoegde kostenpost er meteen in staat. De gekozen optie onthouden we,
+   anders springt het formulier terug naar "Rent" terwijl je aan het invullen
+   bent. */
+function vulCategorieKeuze(){
+  var keuze = $('uitCat').value;
+  $('uitCat').innerHTML = st.categorieen.map(function(c){
+    return '<option value="' + c.id + '">' + ontsnap(c.naam) + '</option>';
+  }).join('');
+  if(keuze && st.categorieen.some(function(c){ return c.id === keuze; })) $('uitCat').value = keuze;
+}
+
+st = laad();
+gekozenMaand = maandSleutel(new Date());
+$('uitDatum').value = toonDatum(vandaagSleutel());
+$('klusDatum').value = toonDatum(vandaagSleutel());
+vulCategorieKeuze();
+tekenAlles();
+
+</script>
+</body>
+</html>

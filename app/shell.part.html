@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#241423">
+<title>London Budget</title>
+<!-- Zonder deze regel maakt iOS bij "Add to Home Screen" zelf een miniatuur
+     van het dashboard als icoon: een onleesbaar propje. De 180px is wat iOS
+     pakt; de manifest regelt hetzelfde op Android. -->
+<link rel="apple-touch-icon" href="icoon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icoon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="London Budget">
+<!--STYLE-->
+<style>
+/* ---------- alleen voor de werkende app ----------
+   De mockup had een vaste maand; hier kun je bladeren, dus de kop heeft
+   pijlen nodig. De rest van de opmaak komt ongewijzigd uit het ontwerp. */
+.maandnav{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.maandpijl{background:var(--inkt);color:var(--lime);border:0;width:30px;height:30px;border-radius:50%;
+  font:inherit;font-size:17px;font-weight:800;line-height:1;cursor:pointer;display:grid;place-items:center;
+  padding:0;flex:0 0 30px}
+.maandpijl:active{transform:scale(.93)}
+.maandknop{cursor:pointer;white-space:nowrap;font-size:12.5px;padding:8px 11px}
+h1{font-size:19px}
+
+/* Lege staten: een nieuwe gebruiker begint zonder gegevens, en dan moet het
+   scherm uitleggen wat er hoort te komen in plaats van leeg te blijven. */
+.nowrap{white-space:nowrap}
+.legekaart{text-align:center;padding:22px 10px}
+.legekaart .groot{font-size:14.5px;font-weight:800}
+.legekaart .klein{font-size:12px;color:var(--zacht);font-weight:600;margin-top:4px;line-height:1.5}
+
+/* De notitie bij een dag is nu typbaar. */
+.notitieveld{width:100%;box-sizing:border-box;background:#F6F2DC;border:1.5px solid #EBE3C2;
+  border-radius:13px;padding:10px 12px;font:inherit;font-size:12.5px;color:#6B5F2E;resize:vertical;
+  min-height:62px;margin-top:10px}
+.notitieveld::placeholder{color:#B3A56E}
+.dag{cursor:pointer}
+.dag.gekozen{outline:2.5px solid var(--inkt);outline-offset:1px}
+
+/* Knoppen in Instellingen die iets ingrijpends doen, mogen er ook naar uitzien. */
+.knop.stil{background:transparent;color:var(--zacht);border:1.5px dashed #DCC7B4}
+.knop.gevaar{background:#FDEFF2;color:#C0344F;border:1.5px solid #F3C9D2}
+.veldrij .fout{color:#C0344F;font-size:11.5px;font-weight:700;margin-top:5px;display:none}
+.veldrij.mis .fout{display:block}
+.veldrij.mis input,.veldrij.mis select{border-color:#E79BAB}
+.bewerkbalk{display:none;align-items:center;gap:8px;background:#FFF3D6;border:1.5px solid #F0DFB0;
+  border-radius:13px;padding:9px 11px;margin-bottom:11px;font-size:12px;font-weight:700;color:#8A6D1F}
+.bewerkbalk.aan{display:flex}
+.bewerkbalk button{margin-left:auto;background:none;border:0;font:inherit;font-weight:800;
+  color:#8A6D1F;text-decoration:underline;cursor:pointer;flex:0 0 auto}
+
+/* Een nieuwe kostenpost of inkomstenbron vragen we in de pagina zelf, niet met
+   het grijze systeemvenster van de browser. Dat venster kan geen twee vragen
+   tegelijk stellen (naam én bedrag), en "OK = euro, Annuleer = pond" is een
+   raadsel in plaats van een keuze. */
+.nieuwrij{border:1.5px dashed #DCC7B4;border-radius:15px;padding:12px;margin:0 0 11px;
+  background:#FFFDF8;display:flex;flex-direction:column;gap:10px}
+/* Zonder deze regel wint display:flex van het hidden-attribuut en staat het
+   rijtje altijd open. */
+.nieuwrij[hidden]{display:none}
+.nieuwrij .veld{display:flex;flex-direction:column;gap:5px}
+.nieuwrij .veld>span{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--zacht)}
+.nieuwrij input{width:100%;box-sizing:border-box;background:var(--zand);border:1.5px solid var(--rand);
+  border-radius:12px;padding:10px 12px;font:inherit;font-size:13.5px;font-weight:700;color:var(--inkt)}
+.nieuwrij input::placeholder{color:#C4AE9C;font-weight:600}
+.muntkeuze{display:flex;gap:7px}
+.muntknop{flex:1;background:var(--zand);border:1.5px solid var(--rand);border-radius:12px;padding:9px 6px;
+  font:inherit;font-size:12.5px;font-weight:800;color:var(--zacht);cursor:pointer}
+.muntknop.aan{background:var(--inkt);border-color:var(--inkt);color:var(--lime)}
+.nieuwknoppen{display:flex;gap:8px}
+/* Bij een euro-uitgave laten we meteen zien wat dat in ponden wordt, zodat je
+   niet hoeft te gokken of het binnen je budget past. */
+/* De opmaak uit het ontwerp mikt op label.veld; de muntkeuze is geen label
+   (er zit geen invoerveld in, maar twee knoppen), dus krijgt hij het kopje
+   hier op dezelfde manier. */
+div.veld>span{display:block;font-size:10px;color:var(--zacht);margin-bottom:5px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em}
+.muntuitleg{font-size:11.5px;font-weight:700;color:#6F8C00;margin-top:6px}
+.muntuitleg[hidden]{display:none}
+.knop.klein,.spookknop.klein{flex:1;padding:10px 8px;font-size:12.5px;margin:0}
+
+/* Het app-icoon in de kop. De 24% radius is wat iOS zelf op een icoon zet,
+   dus in de app ziet hij eruit zoals hij straks op het beginscherm staat. */
+h1{display:flex;align-items:center;gap:9px}
+.merkicoon{width:27px;height:27px;border-radius:24%;flex:0 0 27px;display:block}
+
+/* Het kaartje in Settings dat laat zien hoe de app op je beginscherm komt.
+   Zonder die uitleg blijft dit een pagina in Safari en geen app. */
+.beginscherm{display:flex;align-items:center;gap:13px;background:var(--zand);
+  border:1.5px solid var(--rand);border-radius:15px;padding:13px;margin:0 0 11px}
+.beginscherm img{width:56px;height:56px;border-radius:24%;flex:0 0 56px;display:block;
+  box-shadow:0 3px 9px rgba(36,20,35,.22)}
+.beginscherm b{display:block;font-size:13.5px;margin-bottom:3px}
+.beginscherm p{margin:0;font-size:11.5px;line-height:1.45;color:var(--zacht);font-weight:600}
+</style>
+</head>
+<body>
+<!--SPRITE-->
+
+<div class="app">
+
+<header>
+  <h1><img src="icoon-180.png" alt="" class="merkicoon">London Budget</h1>
+  <div class="maandnav">
+    <button class="maandpijl" id="vorigemaand" aria-label="Previous month">&lsaquo;</button>
+    <button class="maandknop" id="maandlabel">&nbsp;</button>
+    <button class="maandpijl" id="volgendemaand" aria-label="Next month">&rsaquo;</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ================= DASHBOARD ================= -->
+<section class="paneel actief" id="dash">
+
+  <div class="hero">
+    <div class="zon"></div>
+    <div class="kop">
+      <div class="label">Left to spend</div>
+      <div class="bedrag" id="heroBedrag">£0.00</div>
+      <div class="klein" id="heroKlein">&nbsp;</div>
+    </div>
+    <div class="ring">
+      <svg viewBox="0 0 120 120" width="74" height="74">
+        <circle cx="60" cy="60" r="48" fill="rgba(36,20,35,.22)" stroke="rgba(255,255,255,.3)" stroke-width="13"/>
+        <circle id="ringBoog" cx="60" cy="60" r="48" fill="none" stroke="#D8F34B" stroke-width="13" stroke-linecap="round"
+                stroke-dasharray="0 302" transform="rotate(-90 60 60)"/>
+        <text id="ringTekst" x="60" y="57" text-anchor="middle" fill="#fff" font-size="26" font-weight="800" font-family="Bricolage">0%</text>
+        <text x="60" y="75" text-anchor="middle" fill="rgba(255,255,255,.88)" font-size="12" font-weight="600" font-family="Bricolage">spent</text>
+      </svg>
+    </div>
+    <svg class="skyline" viewBox="0 0 420 130" preserveAspectRatio="none" aria-hidden="true">
+      <g fill="rgba(36,20,35,.42)">
+        <circle cx="52" cy="66" r="28" fill="none" stroke="rgba(36,20,35,.42)" stroke-width="5"/>
+        <circle cx="52" cy="66" r="19" fill="none" stroke="rgba(36,20,35,.2)" stroke-width="2.5"/>
+        <path d="M49 66h6v64h-6z"/>
+        <path d="M104 50h22v80h-22z"/>
+        <path d="M101 50h28v6h-28z"/>
+        <path d="M115 26l12 24h-24z"/>
+        <circle cx="115" cy="66" r="6.5" fill="rgba(255,255,255,.55)"/>
+        <path d="M134 92h54v38h-54z"/>
+        <path d="M142 82h6v10h-6zM158 78h6v14h-6zM174 82h6v10h-6z"/>
+        <path d="M212 130 226 34l14 96z"/>
+        <path d="M266 130c-7-26-7-53 9-72 16 19 16 46 9 72z"/>
+        <path d="M296 98h30v32h-30z"/>
+        <path d="M336 74h14v56h-14zM380 74h14v56h-14z"/>
+        <path d="M334 68h18v6h-18zM378 68h18v6h-18z"/>
+        <path d="M343 54l7 14h-14zM387 54l7 14h-14z"/>
+        <path d="M350 88h30v8h-30z"/>
+        <path d="M350 106q15 14 30 0v8q-15 12-30 0z"/>
+      </g>
+      <g>
+        <rect x="176" y="102" width="52" height="24" rx="5" fill="#FF3B30" opacity=".85"/>
+        <rect x="182" y="107" width="11" height="9" rx="2" fill="#FFF1E4" opacity=".9"/>
+        <rect x="197" y="107" width="11" height="9" rx="2" fill="#FFF1E4" opacity=".9"/>
+        <rect x="212" y="107" width="10" height="9" rx="2" fill="#FFF1E4" opacity=".9"/>
+        <circle cx="190" cy="126" r="5" fill="#241423" opacity=".7"/>
+        <circle cx="216" cy="126" r="5" fill="#241423" opacity=".7"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="mini">
+    <div class="stat"><div class="vlek" style="background:var(--gwl)"></div><div class="k">Income</div><div class="v" id="statInkomen">£0.00</div></div>
+    <div class="stat"><div class="vlek" style="background:var(--kled)"></div><div class="k">Budget</div><div class="v" id="statBudget">£0.00</div></div>
+    <div class="stat"><div class="vlek" style="background:var(--bood)"></div><div class="k">Spent</div><div class="v" id="statUit">£0.00</div></div>
+    <div class="stat"><div class="vlek" style="background:var(--leuk)"></div><div class="k">Left at month end</div><div class="v" id="statOver">£0.00</div></div>
+  </div>
+
+  <div class="kaart">
+    <h2>How much is left?</h2>
+    <p class="sub">The whole bar is your monthly budget. The coloured part is what you already spent.</p>
+    <div class="gl">
+      <span><i style="background:var(--kled)"></i>Spent</span>
+      <span><i style="background:#EEE0FA"></i>Left</span>
+      <span><i style="background:repeating-linear-gradient(118deg,#FF1F4B,#FF1F4B 4px,#FF6685 4px,#FF6685 8px)"></i>Over budget</span>
+    </div>
+    <div id="balken"></div>
+    <div class="totaalrij"><span>Total spent</span><b id="balkenTotaal">£0.00</b></div>
+  </div>
+
+  <details class="invoer" id="budgetblok">
+    <summary><span class="plus">&#9998;</span> Change your budget</summary>
+    <div class="body">
+      <p class="sub" style="margin-top:0">Two kinds of change, one place.
+        <b>Did a cost change for good?</b> Type the new amount and switch on
+        <i>Make this my new default</i> at the bottom &mdash; every month from now on follows it.
+        <b>Just this one month?</b> Leave that switch off and only <span class="dezemaand"></span> changes.
+        And a cost that does not come up at all this month goes off with its own switch;
+        next month it is simply back.</p>
+
+      <div id="budgetrijen"></div>
+
+      <button class="spookknop" id="nieuwecategorie">+ New cost</button>
+
+      <div class="nieuwrij" id="nieuwecategorierij" hidden>
+        <label class="veld"><span>Name</span>
+          <input id="nieuwecategorienaam" placeholder="E.g. Books"></label>
+        <label class="veld"><span>Monthly amount</span>
+          <input id="nieuwecategoriebedrag" inputmode="decimal" placeholder="£0.00"></label>
+        <div class="nieuwknoppen">
+          <button class="knop klein" id="nieuwecategorieklaar">Add cost</button>
+          <button class="spookknop klein" id="nieuwecategorieaf">Cancel</button>
+        </div>
+      </div>
+
+      <div class="budgettotaal"><span>Budget for <span class="dezemaand"></span></span><b id="budgetsom">£0.00</b></div>
+
+      <div class="standaardrij">
+        <span class="tekst"><div class="kop">Make this my new default</div>
+          <div class="uitleg">On: every month from now on uses these amounts. Off: only <span class="dezemaand"></span> changes.</div></span>
+        <button class="schakel" id="budgetstandaard" aria-label="Default on or off"></button>
+      </div>
+
+      <button class="knop" id="budgetopslaan">Save</button>
+      <p class="voetnoot">Expenses you already logged stay exactly where they are; only the length of the bars changes.</p>
+    </div>
+  </details>
+
+  <div class="kaart">
+    <h2>Where your money comes from</h2>
+    <p class="sub">Euro amounts are converted using your exchange rate. Every source has its own run time, so each
+      month only counts what actually arrives.</p>
+
+    <div id="bronnen"></div>
+
+    <details class="werkblok">
+      <summary>
+        <div class="bron">
+          <span class="ic" style="background:#E7DCE8;color:var(--rnd)"><svg><use href="#i-werk"/></svg></span>
+          <span class="tekst"><span class="naam">Work <span class="badge-vraag">varies per month</span></span>
+            <span class="tik">log individual jobs <svg><use href="#i-chevron"/></svg></span></span>
+          <span class="geld"><div class="pond" id="werkKop">£0.00</div></span>
+        </div>
+      </summary>
+
+      <div class="werkbinnen">
+        <div id="klussen"></div>
+
+        <div class="tweekolom veldrij">
+          <label class="veld"><span>Date</span><input id="klusDatum" inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+          <label class="veld"><span>Amount</span><input id="klusBedrag" inputmode="decimal" placeholder="£0.00"></label>
+        </div>
+        <label class="veld veldrij"><span>What for</span><input id="klusOms" placeholder="E.g. three shifts"></label>
+        <div class="veldrij" id="klusFoutrij"><span class="fout" id="klusFout"></span></div>
+        <button class="knop" id="klusToevoegen">Add job</button>
+
+        <div class="werktotaal"><span>Earned in <span class="dezemaand"></span></span><b id="werkTotaal">£0.00</b></div>
+      </div>
+    </details>
+
+    <div class="totaalrij"><span><span class="dezemaand"></span> income</span><b id="inkomenTotaal">£0.00</b></div>
+    <p class="voetnoot" id="inkomenVoetnoot"></p>
+  </div>
+
+  <details class="invoer" id="inkomstenblok">
+    <summary><span class="plus">&#9998;</span> Change your income</summary>
+    <div class="body">
+      <p class="sub" style="margin-top:0">Two kinds of change, one place.
+        <b>Did your grant or savings change for good?</b> Type the new amount and switch on
+        <i>Make this my new default</i> at the bottom &mdash; every month from now on follows it.
+        <b>Just this one month?</b> Leave that switch off and only <span class="dezemaand"></span> changes.
+        And a source that does not pay out at all this month goes off with its own switch.</p>
+
+      <div id="inkomstenrijen"></div>
+
+      <button class="spookknop" id="nieuwebron">+ New income source</button>
+
+      <div class="nieuwrij" id="nieuwebronrij" hidden>
+        <label class="veld"><span>Name</span>
+          <input id="nieuwebronnaam" placeholder="E.g. Birthday money"></label>
+        <div class="veld"><span>Currency</span>
+          <div class="muntkeuze">
+            <button class="muntknop aan" id="muntEUR" data-munt="EUR">&euro; euros</button>
+            <button class="muntknop" id="muntGBP" data-munt="GBP">&pound; pounds</button>
+          </div>
+        </div>
+        <label class="veld"><span>Monthly amount</span>
+          <input id="nieuwebronbedrag" inputmode="decimal" placeholder="0.00"></label>
+        <div class="nieuwknoppen">
+          <button class="knop klein" id="nieuwebronklaar">Add income</button>
+          <button class="spookknop klein" id="nieuwebronaf">Cancel</button>
+        </div>
+      </div>
+
+      <div class="budgettotaal"><span>Income for <span class="dezemaand"></span></span><b id="inkomstensom">£0.00</b></div>
+
+      <div class="standaardrij">
+        <span class="tekst"><div class="kop">Make this my new default</div>
+          <div class="uitleg">On: every month from now on uses these amounts. Off: only <span class="dezemaand"></span> changes.</div></span>
+        <button class="schakel" id="inkomstenstandaard" aria-label="Default on or off"></button>
+      </div>
+
+      <button class="knop" id="inkomstenopslaan">Save</button>
+      <p class="voetnoot">Work is the one you cannot type over here &mdash; that total comes from the jobs you log
+        above, so it always matches what you actually got paid. Change the exchange rate in Settings and every
+        euro amount is recalculated.</p>
+    </div>
+  </details>
+
+  <div class="kaart">
+    <h2>Settings</h2>
+    <p class="sub">Change these and the whole dashboard follows.</p>
+    <label class="veld veldrij"><span>Exchange rate &mdash; &euro;1 =</span><input id="koers" inputmode="decimal"></label>
+    <p class="voetnoot" style="margin-top:0">Everything is saved on this phone only. Nothing is sent anywhere,
+      so no account is needed &mdash; but clearing your browser data clears your budget too.</p>
+
+    <div class="beginscherm">
+      <img src="icoon-512.png" alt="The London Budget app icon: a pound sign over a London skyline at sunset">
+      <div>
+        <b>Put it on your home screen</b>
+        <p>In Safari, tap Share and then <i>Add to Home Screen</i>. You get this icon, and the
+          app opens full screen without the browser bar.</p>
+      </div>
+    </div>
+    <button class="knop stil" id="voorbeeldknop">Load example month</button>
+    <button class="knop gevaar" id="wisknop" style="margin-top:8px">Delete everything and start over</button>
+  </div>
+</section>
+
+<!-- ================= EXPENSES ================= -->
+<section class="paneel" id="trans">
+  <div class="tip">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#FF2E7E" stroke-width="1.8" stroke-linecap="round"><use href="#i-info"/></svg>
+    <div><b>Enter it once.</b> Dashboard, bars and calendar all update straight away.</div>
+  </div>
+
+  <details class="invoer" id="uitgaveblok" open>
+    <summary><span class="plus">+</span> <span id="formulierkop">Add expense</span></summary>
+    <div class="body">
+      <div class="bewerkbalk" id="bewerkbalk">
+        <span id="bewerktekst"></span><button type="button" id="bewerkstop">Cancel</button>
+      </div>
+      <div class="tweekolom veldrij">
+        <label class="veld"><span>Date</span><input id="uitDatum" inputmode="numeric" placeholder="dd/mm/yyyy"></label>
+        <label class="veld"><span>Amount</span><input id="uitBedrag" inputmode="decimal" placeholder="£0.00"></label>
+      </div>
+      <div class="veld veldrij"><span>Paid in</span>
+        <div class="muntkeuze">
+          <button type="button" class="muntknop aan" id="uitMuntGBP" data-munt="GBP">&pound; pounds</button>
+          <button type="button" class="muntknop" id="uitMuntEUR" data-munt="EUR">&euro; euros</button>
+        </div>
+        <div class="muntuitleg" id="uitMuntUitleg" hidden></div>
+      </div>
+      <label class="veld veldrij"><span>Description</span><input id="uitOms" placeholder="E.g. coffee at Monmouth"></label>
+      <label class="veld veldrij"><span>Category</span><select id="uitCat"></select></label>
+      <div class="veldrij" id="uitFoutrij"><span class="fout" id="uitFout"></span></div>
+      <button class="knop" id="uitOpslaan">Add</button>
+    </div>
+  </details>
+
+  <div class="kaart">
+    <h2 class="dezemaand"></h2>
+    <p class="sub"><span id="aantalposten">0</span> expenses &middot; <b id="somposten">£0.00</b> in total</p>
+    <div id="postenlijst"></div>
+    <div class="totaalrij"><span><span class="dezemaand"></span> total</span><b id="somtotaal">£0.00</b></div>
+  </div>
+</section>
+
+<!-- ================= CALENDAR ================= -->
+<section class="paneel" id="kal">
+  <div class="tip">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#9B5DE5" stroke-width="1.8" stroke-linecap="round"><use href="#i-info"/></svg>
+    <div><b>Your month at a glance.</b> The fuller the colour, the more you spent that day. Tap a day for the details.</div>
+  </div>
+
+  <div class="kaart">
+    <h2 class="dezemaand"></h2>
+    <p class="sub" id="kalSub">&nbsp;</p>
+    <div class="kal" id="kalender"></div>
+    <div class="kallegenda">
+      <span><i style="background:#FFF8F1"></i>Little</span>
+      <span><i style="background:#FFE6D2;border-color:#F7D2B8"></i>Some</span>
+      <span><i style="background:linear-gradient(150deg,#FF5A3C,#FF2E7E);border-color:transparent"></i>A lot</span>
+      <span><i style="background:#E3D08F;border-color:transparent;border-radius:50%"></i>Note</span>
+    </div>
+  </div>
+
+  <div class="kaart dagdetail" id="dagdetail"></div>
+</section>
+
+</main>
+
+<div class="terugbalk" id="terugbalk" role="status" aria-live="polite">
+  <span class="melding" id="terugtekst"></span>
+  <button type="button" id="terugknop"><svg><use href="#i-terug"/></svg>Undo</button>
+</div>
+</div>
+
+<div class="tabbalk">
+  <div class="binnen">
+    <button class="actief" data-tab="dash"><span class="bol"><svg><use href="#i-tabdash"/></svg></span>Dashboard</button>
+    <button data-tab="trans"><span class="bol"><svg><use href="#i-tablijst"/></svg></span>Expenses</button>
+    <button data-tab="kal"><span class="bol"><svg><use href="#i-tabkal"/></svg></span>Calendar</button>
+  </div>
+</div>
+
+<!--SCRIPT-->
+</body>
+</html>

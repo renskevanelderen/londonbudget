@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFF6EC">
+<title>London Budget — design</title>
+<style>
+@font-face{font-family:"Bricolage";font-weight:200 800;font-stretch:75% 100%;font-display:swap;
+  src:url("fonts/bricolage-latin.woff2") format("woff2")}
+@font-face{font-family:"Fraunces";font-weight:300 900;font-display:swap;
+  src:url("fonts/fraunces-latin.woff2") format("woff2")}
+
+:root{
+  --inkt:#241423;
+  --zacht:#8A7382;
+  --creme:#FFF6EC;
+  --kaart:#FFFDFA;
+  --rand:#F0E2D6;
+  --schaduw:0 6px 18px rgba(58,26,50,.07);
+
+  --huur:#E4572E;
+  --bood:#17A398;
+  --leuk:#FF2E7E;
+  --kled:#9B5DE5;
+  --gwl:#F4A300;
+  --gym:#8FB300;
+  --swap:#E8B200;
+  --wifi:#5FCB6B;
+  --rnd:#7A4E7E;
+  --ihs:#E5798C;
+  --over:#FF1F4B;
+  --lime:#D8F34B;
+
+  --balk:64px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;background:#EFE6DC;color:var(--inkt);
+  font:15px/1.45 "Bricolage",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:flex;justify-content:center;align-items:flex-start;overflow-x:hidden;
+}
+
+/* Het telefoonvenster. Op een echte iPhone vult .app het scherm;
+   op een breed scherm blijft hij even smal, zodat het ontwerp niet liegt. */
+.app{
+  width:100%;max-width:420px;min-height:100vh;position:relative;
+  background:var(--creme);
+  background-image:
+    radial-gradient(340px 260px at 6% 0%,#FFD9C2 0%,transparent 64%),
+    radial-gradient(320px 240px at 98% 4%,#F3D9FF 0%,transparent 62%),
+    radial-gradient(300px 240px at 50% 100%,#EAF6C0 0%,transparent 62%);
+  background-attachment:fixed;
+  padding-bottom:calc(var(--balk) + 26px + env(safe-area-inset-bottom));
+}
+.app::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:60;opacity:.14;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+}
+h1,h2,h3,.getal{font-family:"Bricolage";font-stretch:88%;letter-spacing:-.025em}
+
+.lint{background:var(--inkt);color:var(--lime);font-size:9.5px;letter-spacing:.12em;text-align:center;
+  padding:6px 10px;text-transform:uppercase;font-weight:700}
+
+header{padding:16px 16px 4px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{font-size:22px;margin:0;font-weight:800}
+.maandknop{background:var(--inkt);color:var(--lime);border:0;border-radius:999px;padding:8px 14px;
+  font:inherit;font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+.maandknop svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+
+main{padding:8px 16px 0}
+.paneel{display:none}
+.paneel.actief{display:block}
+
+.kaart{background:var(--kaart);border:1.5px solid var(--rand);border-radius:20px;
+  box-shadow:var(--schaduw);padding:16px 16px}
+.kaart+.kaart{margin-top:12px}
+.kaart h2{font-size:16px;margin:0 0 2px;font-weight:800}
+.kaart .sub{font-size:12px;color:var(--zacht);margin:0 0 14px;font-weight:500;line-height:1.45}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:18px 18px 0;color:#fff;
+  background:linear-gradient(150deg,#6B2D5C 0%,#C42A66 42%,#FF5A3C 78%,#FFA92B 100%);
+  min-height:212px;margin-bottom:12px}
+.hero .zon{position:absolute;right:22px;top:18px;width:52px;height:52px;border-radius:50%;
+  background:#FFE08A;opacity:.9}
+.hero .kop{position:relative;z-index:2}
+.hero .label{font-family:"Fraunces";font-style:italic;font-size:14px;opacity:.95}
+.hero .bedrag{font-size:44px;font-weight:800;line-height:1;margin:4px 0 6px;font-stretch:85%}
+.hero .klein{font-size:12px;opacity:.92;font-weight:500;max-width:190px;line-height:1.4}
+.hero svg.skyline{position:absolute;left:0;right:0;bottom:0;width:100%;height:104px;display:block}
+.hero .ring{position:absolute;right:16px;bottom:20px;z-index:2}
+
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.stat{background:var(--kaart);border:1.5px solid var(--rand);border-radius:16px;padding:11px 12px;
+  box-shadow:var(--schaduw);position:relative;overflow:hidden}
+.stat .k{font-size:9.5px;color:var(--zacht);font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+.stat .v{font-size:19px;font-weight:800;margin-top:1px;font-stretch:86%}
+.stat .vlek{position:absolute;right:-14px;top:-14px;width:44px;height:44px;border-radius:50%;opacity:.16}
+
+/* ---------- velden ---------- */
+label.veld span{display:block;font-size:10px;color:var(--zacht);margin-bottom:5px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em}
+input,select,textarea{
+  width:100%;background:#FFF1E4;border:1.5px solid #F2DCC8;border-radius:13px;
+  padding:11px 12px;font:inherit;font-size:15px;font-weight:700;color:var(--inkt);
+  -webkit-appearance:none;appearance:none}
+input::placeholder{color:#C7B0A0;font-weight:500}
+input:focus,select:focus{outline:none;border-color:var(--leuk);background:#fff}
+.tweekolom{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.veldrij{margin-bottom:10px}
+.knop{width:100%;background:var(--inkt);color:var(--lime);border:0;border-radius:14px;
+  padding:14px;font:inherit;font-weight:800;font-size:15px}
+
+/* ---------- inkomsten ---------- */
+.bron{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1.5px solid #F6EAE0}
+.bron .ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:0 0 34px}
+.bron .ic svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.bron .tekst{flex:1;min-width:0}
+.bron .naam{font-size:14px;font-weight:800;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.bron .looptijd{font-size:11.5px;color:var(--zacht);font-weight:600;margin-top:1px}
+.bron .geld{text-align:right;flex:0 0 auto}
+.bron .pond{font-size:15px;font-weight:800;font-stretch:86%}
+.bron .euro{font-size:11px;color:var(--zacht);font-weight:600;margin-top:1px}
+.bron.uit{opacity:.5}
+.bron.uit .pond{font-size:11px;background:#EFE3EA;color:#9C8794;border-radius:999px;padding:3px 9px;
+  font-weight:800;display:inline-block}
+.badge-vraag{background:var(--lime);color:var(--inkt);font-size:9.5px;font-weight:800;border-radius:999px;
+  padding:2px 8px;letter-spacing:.02em}
+
+/* Werkinkomsten wisselen per maand, dus die krijgen een eigen logboekje
+   in plaats van één vast bedrag zoals de andere bronnen. */
+.werkblok{border-bottom:0}
+.werkblok>summary{list-style:none}
+.werkblok>summary::-webkit-details-marker{display:none}
+.werkblok>summary .bron{border-bottom:0}
+.werkblok .tik{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;
+  color:var(--rnd);margin-top:3px}
+.werkblok .tik svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round;transition:.15s}
+.werkblok[open] .tik svg{transform:rotate(180deg)}
+.werkbinnen{background:#F8F2F9;border:1.5px solid #EBDFEC;border-radius:16px;padding:13px;margin:2px 0 13px}
+.klus{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1.5px solid #EBDFEC}
+.klus:last-of-type{border-bottom:0}
+.klus .tekst{flex:1;min-width:0}
+.klus .wie{font-size:13.5px;font-weight:800}
+.klus .wanneer{font-size:11px;color:var(--zacht);font-weight:600;margin-top:1px}
+.klus .op{font-size:14px;font-weight:800;font-stretch:86%}
+.klus.voorbeeld{opacity:.55}
+.werkleeg{text-align:center;padding:14px 6px 16px}
+.werkleeg .groot{font-size:13.5px;font-weight:800}
+.werkleeg .klein{font-size:11.5px;color:var(--zacht);font-weight:600;margin-top:3px}
+.werktotaal{display:flex;justify-content:space-between;align-items:center;margin-top:11px;
+  padding-top:11px;border-top:1.5px solid #EBDFEC;font-size:13px;font-weight:800}
+.werktotaal b{font-size:16px;font-stretch:86%}
+.totaalrij{background:var(--inkt);color:#fff;border-radius:14px;padding:12px 14px;margin-top:12px;
+  display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:14px}
+.totaalrij b{font-size:17px;font-stretch:86%}
+.voetnoot{font-size:11.5px;color:var(--zacht);font-weight:500;margin:12px 0 0;line-height:1.55}
+
+/* ---------- balken ---------- */
+.gl{display:flex;gap:12px;font-size:11px;color:var(--zacht);font-weight:700;margin-bottom:14px;flex-wrap:wrap}
+.gl i{display:inline-block;width:18px;height:9px;border-radius:999px;margin-right:6px;vertical-align:0}
+.cat{margin-bottom:14px}
+.cat:last-child{margin-bottom:0}
+.catkop{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.catkop .ic{width:26px;height:26px;border-radius:9px;display:grid;place-items:center;flex:0 0 26px}
+.catkop .ic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.catkop .naam{font-size:13px;font-weight:800;flex:1;min-width:0}
+.catkop .cijfers{font-size:11.5px;color:var(--zacht);font-weight:700;white-space:nowrap}
+.catkop .cijfers b{color:var(--inkt);font-size:13.5px;font-weight:800;font-stretch:86%}
+.baan{position:relative;height:16px;border-radius:999px;overflow:hidden}
+.baan i{position:absolute;left:0;top:0;bottom:0;border-radius:999px}
+.baan.overschreden{background:#FFD9E1}
+.baan.overschreden i{background:repeating-linear-gradient(118deg,var(--over),var(--over) 8px,#FF6685 8px,#FF6685 16px)}
+.badge-over{background:var(--over);color:#fff;font-size:9.5px;font-weight:800;border-radius:999px;
+  padding:2px 8px;display:inline-block;margin-top:5px}
+.cat.rood .catkop .cijfers b{color:var(--over)}
+
+/* ---------- uitgaven ---------- */
+.tip{background:var(--kaart);border:1.5px solid var(--rand);border-radius:16px;padding:11px 13px;
+  margin-bottom:12px;font-size:12.5px;color:#6E5B69;box-shadow:var(--schaduw);display:flex;gap:10px;
+  align-items:center;font-weight:500;line-height:1.4}
+.tip b{color:var(--inkt);font-weight:800}
+.tip svg{flex:0 0 26px;width:26px;height:26px}
+
+details.invoer{background:var(--kaart);border:1.5px solid var(--rand);border-radius:20px;
+  box-shadow:var(--schaduw);margin-bottom:12px;overflow:hidden}
+details.invoer summary{list-style:none;padding:14px 16px;display:flex;align-items:center;gap:11px;
+  font-weight:800;font-size:14.5px;cursor:pointer}
+details.invoer summary::-webkit-details-marker{display:none}
+details.invoer summary .plus{width:30px;height:30px;border-radius:10px;background:var(--inkt);color:var(--lime);
+  display:grid;place-items:center;font-size:19px;font-weight:800;line-height:1;flex:0 0 30px}
+details.invoer .body{padding:0 16px 16px}
+details.invoer[open] summary{border-bottom:1.5px solid var(--rand);margin-bottom:14px}
+
+/* ---------- budget per maand aanpassen ---------- */
+.budgetrij{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1.5px solid #F6EAE0}
+.budgetrij:last-of-type{border-bottom:0}
+.budgetrij .ic{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;flex:0 0 28px}
+.budgetrij .ic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.budgetrij .tekst{flex:1;min-width:0}
+.budgetrij .naam{font-size:13.5px;font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.budgetrij .standaard{display:none;font-size:10.5px;color:var(--zacht);font-weight:600;margin-top:1px}
+.budgetrij.gewijzigd .standaard,.budgetrij.uitgezet .standaard{display:block}
+.budgetrij input{width:78px;flex:0 0 78px;padding:8px 9px;font-size:14px;text-align:right;border-radius:11px}
+.budgetrij .munt{flex:0 0 auto;font-size:13px;font-weight:800;color:var(--zacht);margin-right:-4px}
+.budgetrij .omgerekend{font-size:10.5px;color:var(--zacht);font-weight:600;margin-top:1px}
+/* De inkomstenrij heeft een muntteken extra, en bedragen als 1,400.00 zijn
+   langer dan een budgetbedrag. Het bredere veld betalen we terug met een
+   krappere gap, zodat de rij precies even breed blijft. */
+.inkomstenrij{gap:7px}
+.inkomstenrij input{width:86px;flex:0 0 86px}
+.inkomstenrij input[readonly]{background:#F3EAE2;color:var(--zacht)}
+.budgetrij.gewijzigd input{border-color:var(--leuk);background:#fff}
+.budgetrij.gewijzigd .naam::after{content:"changed";background:var(--leuk);color:#fff;font-size:9px;
+  font-weight:800;border-radius:999px;padding:2px 7px;letter-spacing:.02em}
+.budgetrij.uitgezet{opacity:.45}
+.budgetrij.uitgezet input{text-decoration:line-through}
+
+/* De schakelaar: een categorie die deze maand wegvalt zet je uit in plaats
+   van hem te wissen, zodat hij volgende maand gewoon weer terugkomt. */
+.schakel{flex:0 0 40px;width:40px;height:23px;border-radius:999px;background:#E7D7C8;border:0;
+  position:relative;padding:0;cursor:pointer;transition:.15s}
+.schakel::after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.15s}
+.schakel.aan{background:var(--gym)}
+.schakel.aan::after{left:20px}
+.standaardrij{display:flex;align-items:center;gap:11px;background:#F4F8E2;border:1.5px solid #E3EDC2;
+  border-radius:16px;padding:12px;margin:14px 0 12px}
+.standaardrij .tekst{flex:1;min-width:0}
+.standaardrij .kop{font-size:13px;font-weight:800}
+.standaardrij .uitleg{font-size:11px;color:var(--zacht);font-weight:600;margin-top:2px}
+.spookknop{width:100%;background:transparent;border:1.5px dashed #DCC7B4;border-radius:14px;
+  padding:11px;font:inherit;font-weight:800;font-size:13px;color:var(--zacht);margin-top:12px}
+.budgettotaal{display:flex;justify-content:space-between;align-items:center;margin-top:13px;
+  padding-top:12px;border-top:1.5px solid #F6EAE0;font-size:13px;font-weight:800}
+.budgettotaal b{font-size:16px;font-stretch:86%}
+
+.dagkop2{font-size:10.5px;font-weight:800;color:var(--zacht);text-transform:uppercase;letter-spacing:.1em;
+  margin:16px 0 8px 4px}
+.dagkop2:first-child{margin-top:0}
+.post{display:flex;align-items:center;gap:11px;background:#FFF8F1;border:1.5px solid var(--rand);
+  border-radius:15px;padding:10px 12px;margin-bottom:8px}
+.post .ic{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;flex:0 0 32px}
+.post .ic svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.post .tekst{flex:1;min-width:0}
+.post .oms{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.post .cat2{font-size:11px;color:var(--zacht);font-weight:700;margin-top:1px}
+.post .bedrag{font-size:15px;font-weight:800;font-stretch:86%;white-space:nowrap}
+
+/* ---------- uitgave corrigeren of weggooien ----------
+   De post is nu een omhulsel: bovenin de regel zelf (een knop, zodat tikken
+   en toetsenbord vanzelf werken), eronder de acties die pas verschijnen als
+   je 'm opent. Zo blijft de lijst rustig maar is alles bereikbaar. */
+.post{display:block;padding:0;overflow:hidden}
+.postrij{display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;
+  background:none;border:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.postrij .pijl{flex:0 0 auto;color:var(--zacht);display:grid;place-items:center;transition:transform .15s}
+.postrij .pijl svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round}
+.post.open .postrij .pijl{transform:rotate(180deg)}
+.post.open{background:#fff;border-color:#E9D6C6}
+.postacties{display:none;gap:8px;padding:0 12px 11px;border-top:1.5px solid var(--rand);margin-top:2px;
+  padding-top:11px}
+.post.open .postacties{display:flex}
+.postacties button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px;border-radius:12px;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;
+  border:1.5px solid var(--rand);background:#FFF8F1;color:var(--inkt)}
+.postacties button svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.postacties .weg{border-color:#F3C9D2;background:#FDEFF2;color:#C0344F}
+.post.verwijderd{display:none}
+
+/* De terugdraaibalk zweeft boven de tabbalk, zodat een misklik nooit
+   definitief is. Geen "weet je het zeker?" vooraf: die vraag hoort bij
+   iets dat je niet kunt terugdraaien. */
+.terugbalk{position:fixed;left:50%;transform:translateX(-50%) translateY(140%);
+  bottom:calc(var(--balk) + 14px + env(safe-area-inset-bottom));
+  width:min(360px,calc(100vw - 30px));z-index:60;
+  display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:16px;
+  background:var(--inkt);color:#fff;box-shadow:0 10px 26px rgba(0,0,0,.28);
+  transition:transform .22s cubic-bezier(.2,.8,.3,1)}
+.terugbalk.zichtbaar{transform:translateX(-50%) translateY(0)}
+.terugbalk .melding{flex:1;min-width:0;font-size:12.5px;font-weight:700}
+.terugbalk .melding b{font-stretch:86%}
+.terugbalk button{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;
+  background:var(--gym);color:var(--inkt);border:0;border-radius:11px;padding:8px 12px;
+  font:inherit;font-size:12.5px;font-weight:800;cursor:pointer}
+.terugbalk button svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round}
+.leeg{display:none;text-align:center;color:var(--zacht);font-size:12.5px;font-weight:700;padding:18px 0}
+
+/* ---------- kalender ---------- */
+.kal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.kalkop{font-size:9px;font-weight:800;color:var(--zacht);text-align:center;padding:0 0 4px;letter-spacing:.1em}
+.dag{background:#FFF8F1;border:1.5px solid var(--rand);border-radius:11px;aspect-ratio:1/1.12;
+  padding:4px 2px 3px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  position:relative}
+.dag .nr{font-size:10.5px;font-weight:800;color:var(--zacht);line-height:1}
+.dag .bd{font-size:9px;font-weight:800;color:#B94A1E;line-height:1.1;text-align:center}
+.dag .bd.leeg{color:#D9C8BC;font-weight:700}
+.dag .stip{width:5px;height:5px;border-radius:50%;background:#E3D08F;margin-bottom:1px}
+.dag .stip.geen{background:transparent}
+.dag.vol{background:linear-gradient(150deg,#FF5A3C,#FF2E7E);border-color:transparent}
+.dag.vol .nr{color:rgba(255,255,255,.85)}
+.dag.vol .bd{color:#fff}
+.dag.middel{background:#FFE6D2;border-color:#F7D2B8}
+.dag.weekend{background:#FBF0FF;border-color:#EEDBF7}
+.dag.buiten{background:transparent;border:1.5px dashed #EBD8C8;opacity:.45}
+.dag.buiten .bd,.dag.buiten .stip{visibility:hidden}
+.dag.vandaag{border:2.5px solid var(--inkt);box-shadow:2px 2px 0 var(--lime)}
+.dag.vandaag .nr{color:var(--inkt)}
+.kallegenda{display:flex;gap:12px;font-size:10.5px;color:var(--zacht);font-weight:700;margin-top:12px;flex-wrap:wrap}
+.kallegenda i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-2px;
+  border:1.5px solid var(--rand)}
+
+.dagdetail{margin-top:12px}
+.dagdetail .datumkop{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.dagdetail .datumkop .d{font-size:16px;font-weight:800}
+.dagdetail .datumkop .t{font-size:17px;font-weight:800;font-stretch:86%}
+.notitie{background:#F6F2DC;border:1.5px solid #EBE3C2;border-radius:13px;padding:10px 12px;
+  font-size:12.5px;color:#7A6B33;font-weight:600;margin-top:10px}
+.notitie .kop{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:#A9995C;margin-bottom:3px}
+
+/* ---------- tabbalk ---------- */
+.tabbalk{
+  position:fixed;bottom:0;left:0;right:0;z-index:70;
+  display:flex;justify-content:center;pointer-events:none;
+}
+.tabbalk .binnen{
+  width:100%;max-width:420px;pointer-events:auto;
+  background:rgba(255,253,250,.94);backdrop-filter:blur(14px);
+  border-top:1.5px solid var(--rand);
+  display:grid;grid-template-columns:repeat(3,1fr);
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+}
+.tabbalk button{
+  background:none;border:0;font:inherit;color:var(--zacht);font-weight:700;font-size:10.5px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0;border-radius:14px}
+.tabbalk button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+.tabbalk button.actief{color:var(--inkt)}
+.tabbalk button.actief svg{stroke-width:2.3}
+.tabbalk button .bol{width:34px;height:26px;border-radius:999px;display:grid;place-items:center;transition:.15s}
+.tabbalk button.actief .bol{background:var(--lime)}
+</style>
+</head>
+<body>
+
+<!-- icoon-sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-huur" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.6V20h13V9.6"/><path d="M10 20v-5.2h4V20"/></symbol>
+  <symbol id="i-bood" viewBox="0 0 24 24"><path d="M5.6 7.6h12.8l-1 12.6h-10.8z"/><path d="M9 7.6V6a3 3 0 0 1 6 0v1.6"/></symbol>
+  <symbol id="i-leuk" viewBox="0 0 24 24"><path d="M4 4.6h16l-8 8.2v6.6"/><path d="M8.4 19.4h7.2"/></symbol>
+  <symbol id="i-kled" viewBox="0 0 24 24"><path d="M9.2 3.6 5 6.2 3.4 9.8l3.1 1.4.6-1.1v10.3h9.8V10.1l.6 1.1 3.1-1.4L20 6.2l-4.2-2.6a1.9 1.9 0 0 1-3.3 1.3 1.9 1.9 0 0 1-3.3-1.3Z"/></symbol>
+  <symbol id="i-gwl" viewBox="0 0 24 24"><path d="M13.2 2.5 5 13.8h5.4L9.8 21.5 18.6 10h-5.4z"/></symbol>
+  <symbol id="i-gym" viewBox="0 0 24 24"><path d="M2.8 10v4"/><path d="M21.2 10v4"/><path d="M6 7.5v9"/><path d="M18 7.5v9"/><path d="M6 12h12"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><circle cx="5.6" cy="16.4" r="3.4"/><circle cx="18.4" cy="16.4" r="3.4"/><path d="M5.6 16.4 9.4 8h4.4l4.6 8.4"/><path d="M9.4 8h5.2"/><path d="M12 16.4 14.2 8"/></symbol>
+  <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M3.6 8.8a13.2 13.2 0 0 1 16.8 0"/><path d="M6.8 12.6a8.6 8.6 0 0 1 10.4 0"/><path d="M9.8 16.1a4.4 4.4 0 0 1 4.4 0"/><circle cx="12" cy="19.2" r="1.15" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-rnd" viewBox="0 0 24 24"><path d="M11 3.2 12.9 8.7 18.4 10.6 12.9 12.5 11 18 9.1 12.5 3.6 10.6 9.1 8.7z"/><path d="M17.8 15.4l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></symbol>
+  <symbol id="i-ihs" viewBox="0 0 24 24"><path d="M12 20.2S4.4 15.6 4.4 10.5A3.9 3.9 0 0 1 12 8.4a3.9 3.9 0 0 1 7.6 2.1c0 5.1-7.6 9.7-7.6 9.7Z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M12 11v6"/><path d="M12 7.6v.1"/></symbol>
+  <symbol id="i-beurs" viewBox="0 0 24 24"><path d="M2.5 8.6 12 4.4l9.5 4.2L12 12.8z"/><path d="M6.6 10.7v4.5c0 1.6 2.4 2.9 5.4 2.9s5.4-1.3 5.4-2.9v-4.5"/><path d="M20.6 9.4v5.2"/></symbol>
+  <symbol id="i-spaar" viewBox="0 0 24 24"><ellipse cx="12" cy="6.4" rx="7.2" ry="2.9"/><path d="M4.8 6.4v5c0 1.6 3.2 2.9 7.2 2.9s7.2-1.3 7.2-2.9v-5"/><path d="M4.8 11.4v5c0 1.6 3.2 2.9 7.2 2.9s7.2-1.3 7.2-2.9v-5"/></symbol>
+  <symbol id="i-ov" viewBox="0 0 24 24"><rect x="5" y="3.4" width="14" height="13.2" rx="3.6"/><path d="M5 10.2h14"/><circle cx="9" cy="13.4" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="13.4" r="1" fill="currentColor" stroke="none"/><path d="m7.6 16.6-2 3.8"/><path d="m16.4 16.6 2 3.8"/></symbol>
+  <symbol id="i-extra" viewBox="0 0 24 24"><rect x="3.4" y="8.4" width="17.2" height="4.2" rx="1.3"/><path d="M5.2 12.6V20h13.6v-7.4"/><path d="M12 8.4V20"/><path d="M12 8.4S10.4 3.9 8.2 3.9a2.15 2.15 0 0 0 0 4.5z"/><path d="M12 8.4s1.6-4.5 3.8-4.5a2.15 2.15 0 0 1 0 4.5z"/></symbol>
+  <symbol id="i-werk" viewBox="0 0 24 24"><rect x="2.9" y="7.4" width="18.2" height="12.2" rx="3.2"/><path d="M8.8 7.4V6a2 2 0 0 1 2-2h2.4a2 2 0 0 1 2 2v1.4"/><path d="M2.9 12.6h18.2"/></symbol>
+  <symbol id="i-tabdash" viewBox="0 0 24 24"><path d="M4 13.5a8 8 0 0 1 16 0"/><path d="m12 13.5 4-4"/><path d="M4 13.5h16"/></symbol>
+  <symbol id="i-tablijst" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/></symbol>
+  <symbol id="i-tabkal" viewBox="0 0 24 24"><rect x="3.4" y="5.2" width="17.2" height="15.4" rx="3.4"/><path d="M3.4 10h17.2"/><path d="M8 3.4v3.4"/><path d="M16 3.4v3.4"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol>
+  <symbol id="i-prullenbak" viewBox="0 0 24 24"><path d="M4 7h16M10 4h4M9 7v11m6-11v11M6 7l1 13h10l1-13"/></symbol>
+  <symbol id="i-potlood" viewBox="0 0 24 24"><path d="M4 20h4L20 8l-4-4L4 16zM14 6l4 4"/></symbol>
+  <symbol id="i-terug" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/></symbol>
+</svg>
+
+<div class="app">
+
+<div class="lint">Design mockup &middot; sample figures &middot; not a working app yet</div>
+
+<header>
+  <h1>London Budget</h1>
+  <button class="maandknop">September 2026 <svg><use href="#i-chevron"/></svg></button>
+</header>
+
+<main>
+
+<!-- ================= DASHBOARD ================= -->
+<section class="paneel actief" id="dash">
+
+  <div class="hero">
+    <div class="zon"></div>
+    <div class="kop">
+      <div class="label">Left to spend</div>
+      <div class="bedrag">£303.71</div>
+      <div class="klein">of your £1,690.57 budget &middot; 6 days left</div>
+    </div>
+    <div class="ring">
+      <svg viewBox="0 0 120 120" width="74" height="74">
+        <circle cx="60" cy="60" r="48" fill="rgba(36,20,35,.22)" stroke="rgba(255,255,255,.3)" stroke-width="13"/>
+        <circle cx="60" cy="60" r="48" fill="none" stroke="#D8F34B" stroke-width="13" stroke-linecap="round"
+                stroke-dasharray="247 302" transform="rotate(-90 60 60)"/>
+        <text x="60" y="57" text-anchor="middle" fill="#fff" font-size="26" font-weight="800" font-family="Bricolage">82%</text>
+        <text x="60" y="75" text-anchor="middle" fill="rgba(255,255,255,.88)" font-size="12" font-weight="600" font-family="Bricolage">spent</text>
+      </svg>
+    </div>
+    <svg class="skyline" viewBox="0 0 420 130" preserveAspectRatio="none" aria-hidden="true">
+      <g fill="rgba(36,20,35,.42)">
+        <circle cx="52" cy="66" r="28" fill="none" stroke="rgba(36,20,35,.42)" stroke-width="5"/>
+        <circle cx="52" cy="66" r="19" fill="none" stroke="rgba(36,20,35,.2)" stroke-width="2.5"/>
+        <path d="M49 66h6v64h-6z"/>
+        <path d="M104 50h22v80h-22z"/>
+        <path d="M101 50h28v6h-28z"/>
+        <path d="M115 26l12 24h-24z"/>
+        <circle cx="115" cy="66" r="6.5" fill="rgba(255,255,255,.55)"/>
+        <path d="M134 92h54v38h-54z"/>
+        <path d="M142 82h6v10h-6zM158 78h6v14h-6zM174 82h6v10h-6z"/>
+        <path d="M212 130 226 34l14 96z"/>
+        <path d="M266 130c-7-26-7-53 9-72 16 19 16 46 9 72z"/>
+        <path d="M296 98h30v32h-30z"/>
+        <path d="M336 74h14v56h-14zM380 74h14v56h-14z"/>
+        <path d="M334 68h18v6h-18zM378 68h18v6h-18z"/>
+        <path d="M343 54l7 14h-14zM387 54l7 14h-14z"/>
+        <path d="M350 88h30v8h-30z"/>
+        <path d="M350 106q15 14 30 0v8q-15 12-30 0z"/>
+      </g>
+      <g>
+        <rect x="176" y="102" width="52" height="24" rx="5" fill="#FF3B30" opacity=".85"/>
+        <rect x="182" y="107" width="11" height="9" rx="2" fill="#FFF1E4" opacity=".9"/>
+        <rect x="197" y="107" width="11" height="9" rx="2" fill="#FFF1E4" opacity=".9"/>
+        <rect x="212" y="107" width="10" height="9" rx="2" fill="#FFF1E4" opacity=".9"/>
+        <circle cx="190" cy="126" r="5" fill="#241423" opacity=".7"/>
+        <circle cx="216" cy="126" r="5" fill="#241423" opacity=".7"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="mini">
+    <div class="stat"><div class="vlek" style="background:var(--gwl)"></div><div class="k">Income</div><div class="v">£1,756.10</div></div>
+    <div class="stat"><div class="vlek" style="background:var(--kled)"></div><div class="k">Budget</div><div class="v">£1,690.57</div></div>
+    <div class="stat"><div class="vlek" style="background:var(--bood)"></div><div class="k">Spent</div><div class="v">£1,386.86</div></div>
+    <div class="stat"><div class="vlek" style="background:var(--leuk)"></div><div class="k">Left at month end</div><div class="v">£369.24</div></div>
+  </div>
+
+  <div class="kaart">
+    <h2>How much is left?</h2>
+    <p class="sub">The whole bar is your monthly budget. The coloured part is what you already spent.</p>
+    <div class="gl">
+      <span><i style="background:var(--kled)"></i>Spent</span>
+      <span><i style="background:#EEE0FA"></i>Left</span>
+      <span><i style="background:repeating-linear-gradient(118deg,#FF1F4B,#FF1F4B 4px,#FF6685 4px,#FF6685 8px)"></i>Over budget</span>
+    </div>
+
+    <div class="cat">
+      <div class="catkop"><span class="ic" style="background:#FCE3DA;color:var(--huur)"><svg><use href="#i-huur"/></svg></span>
+        <span class="naam">Rent</span><span class="cijfers"><b>£750</b> / 750</span></div>
+      <div class="baan" style="background:#FBE0D6"><i style="width:100%;background:var(--huur)"></i></div>
+    </div>
+    <div class="cat">
+      <div class="catkop"><span class="ic" style="background:#D6F0EE;color:var(--bood)"><svg><use href="#i-bood"/></svg></span>
+        <span class="naam">Groceries</span><span class="cijfers"><b>£162.65</b> / 250</span></div>
+      <div class="baan" style="background:#D6F0EE"><i style="width:65.1%;background:var(--bood)"></i></div>
+    </div>
+    <div class="cat">
+      <div class="catkop"><span class="ic" style="background:#FFD9E7;color:var(--leuk)"><svg><use href="#i-leuk"/></svg></span>
+        <span class="naam">Fun &amp; going out</span><span class="cijfers"><b>£136.25</b> / 300</span></div>
+      <div class="baan" style="background:#FFD9E7"><i style="width:45.4%;background:var(--leuk)"></i></div>
+    </div>
+    <div class="cat rood">
+      <div class="catkop"><span class="ic" style="background:#EBDCFB;color:var(--kled)"><svg><use href="#i-kled"/></svg></span>
+        <span class="naam">Clothes</span><span class="cijfers"><b>£119.99</b> / 100</span></div>
+      <div class="baan overschreden"><i style="width:100%"></i></div>
+      <span class="badge-over">£19.99 over budget</span>
+    </div>
+    <div class="cat">
+      <div class="catkop"><span class="ic" style="background:#FCEBCB;color:#C98600"><svg><use href="#i-gwl"/></svg></span>
+        <span class="naam">Gas / water / electricity</span><span class="cijfers"><b>£72.40</b> / 75</span></div>
+      <div class="baan" style="background:#FCEBCB"><i style="width:96.5%;background:var(--gwl)"></i></div>
+    </div>
+    <div class="cat">
+      <div class="catkop"><span class="ic" style="background:#E6F0C4;color:#6F8C00"><svg><use href="#i-gym"/></svg></span>
+        <span class="naam">Gym</span><span class="cijfers"><b>£24</b> / 24</span></div>
+      <div class="baan" style="background:#E6F0C4"><i style="width:100%;background:var(--gym)"></i></div>
+    </div>
+    <div class="cat">
+      <div class="catkop"><span class="ic" style="background:#FBEEC0;color:#B08A00"><svg><use href="#i-swap"/></svg></span>
+        <span class="naam">Bike &amp; transport</span><span class="cijfers"><b>£16.90</b> / 16.90</span></div>
+      <div class="baan" style="background:#FBEEC0"><i style="width:100%;background:var(--swap)"></i></div>
+    </div>
+    <div class="cat">
+      <div class="catkop"><span class="ic" style="background:#DCF2DE;color:#3E9E4A"><svg><use href="#i-wifi"/></svg></span>
+        <span class="naam">Wifi</span><span class="cijfers"><b>£10</b> / 10</span></div>
+      <div class="baan" style="background:#DCF2DE"><i style="width:100%;background:var(--wifi)"></i></div>
+    </div>
+    <div class="cat">
+      <div class="catkop"><span class="ic" style="background:#E7DCE8;color:var(--rnd)"><svg><use href="#i-rnd"/></svg></span>
+        <span class="naam">Odds &amp; ends</span><span class="cijfers"><b>£30</b> / 100</span></div>
+      <div class="baan" style="background:#E7DCE8"><i style="width:30%;background:var(--rnd)"></i></div>
+    </div>
+    <div class="cat">
+      <div class="catkop"><span class="ic" style="background:#FBDFE4;color:#D25A72"><svg><use href="#i-ihs"/></svg></span>
+        <span class="naam">IHS health surcharge</span><span class="cijfers"><b>£64.67</b> / 64.67</span></div>
+      <div class="baan" style="background:#FBDFE4"><i style="width:100%;background:var(--ihs)"></i></div>
+    </div>
+
+    <div class="totaalrij"><span>Total spent</span><b>£1,386.86</b></div>
+  </div>
+
+  <details class="invoer" id="budgetblok">
+    <summary><span class="plus">&#9998;</span> Change your budget</summary>
+    <div class="body">
+      <p class="sub" style="margin-top:0">Two kinds of change, one place.
+        <b>Did a cost change for good?</b> Type the new amount and switch on
+        <i>Make this my new default</i> at the bottom &mdash; every month from now on follows it.
+        <b>Just this one month?</b> Leave that switch off and only September changes.
+        And a cost that does not come up at all this month goes off with its own switch;
+        next month it is simply back.</p>
+
+      <div class="budgetrij">
+        <span class="ic" style="background:#FCE3DA;color:var(--huur)"><svg><use href="#i-huur"/></svg></span>
+        <span class="tekst"><div class="naam">Rent</div><div class="standaard"></div></span>
+        <input value="750.00" data-standaard="750.00">
+        <button class="schakel aan" aria-label="Rent on or off"></button>
+      </div>
+      <div class="budgetrij">
+        <span class="ic" style="background:#D6F0EE;color:var(--bood)"><svg><use href="#i-bood"/></svg></span>
+        <span class="tekst"><div class="naam">Groceries</div><div class="standaard"></div></span>
+        <input value="250.00" data-standaard="250.00">
+        <button class="schakel aan" aria-label="Groceries on or off"></button>
+      </div>
+      <div class="budgetrij">
+        <span class="ic" style="background:#FFD9E7;color:var(--leuk)"><svg><use href="#i-leuk"/></svg></span>
+        <span class="tekst"><div class="naam">Fun &amp; going out</div><div class="standaard"></div></span>
+        <input value="300.00" data-standaard="300.00">
+        <button class="schakel aan" aria-label="Fun &amp; going out on or off"></button>
+      </div>
+      <div class="budgetrij">
+        <span class="ic" style="background:#EBDCFB;color:var(--kled)"><svg><use href="#i-kled"/></svg></span>
+        <span class="tekst"><div class="naam">Clothes</div><div class="standaard"></div></span>
+        <input value="100.00" data-standaard="100.00">
+        <button class="schakel aan" aria-label="Clothes on or off"></button>
+      </div>
+      <div class="budgetrij">
+        <span class="ic" style="background:#FCEBCB;color:#C98600"><svg><use href="#i-gwl"/></svg></span>
+        <span class="tekst"><div class="naam">Gas / water / electricity</div><div class="standaard"></div></span>
+        <input value="75.00" data-standaard="75.00">
+        <button class="schakel aan" aria-label="gas water electricity on or off"></button>
+      </div>
+      <div class="budgetrij">
+        <span class="ic" style="background:#E6F0C4;color:#6F8C00"><svg><use href="#i-gym"/></svg></span>
+        <span class="tekst"><div class="naam">Gym</div><div class="standaard"></div></span>
+        <input value="24.00" data-standaard="24.00">
+        <button class="schakel aan" aria-label="Gym on or off"></button>
+      </div>
+      <div class="budgetrij">
+        <span class="ic" style="background:#FBEEC0;color:#B08A00"><svg><use href="#i-swap"/></svg></span>
+        <span class="tekst"><div class="naam">Bike &amp; transport</div><div class="standaard"></div></span>
+        <input value="16.90" data-standaard="16.90">
+        <button class="schakel aan" aria-label="Bike &amp; transport on or off"></button>
+      </div>
+      <div class="budgetrij">
+        <span class="ic" style="background:#DCF2DE;color:#3E9E4A"><svg><use href="#i-wifi"/></svg></span>
+        <span class="tekst"><div class="naam">Wifi</div><div class="standaard"></div></span>
+        <input value="10.00" data-standaard="10.00">
+        <button class="schakel aan" aria-label="Wifi on or off"></button>
+      </div>
+      <div class="budgetrij">
+        <span class="ic" style="background:#E7DCE8;color:var(--rnd)"><svg><use href="#i-rnd"/></svg></span>
+        <span class="tekst"><div class="naam">Odds &amp; ends</div><div class="standaard"></div></span>
+        <input value="100.00" data-standaard="100.00">
+        <button class="schakel aan" aria-label="Odds &amp; ends on or off"></button>
+      </div>
+      <div class="budgetrij">
+        <span class="ic" style="background:#FBDFE4;color:#D25A72"><svg><use href="#i-ihs"/></svg></span>
+        <span class="tekst"><div class="naam">IHS health surcharge</div><div class="standaard"></div></span>
+        <input value="64.67" data-standaard="64.67">
+        <button class="schakel aan" aria-label="IHS health surcharge on or off"></button>
+      </div>
+
+      <button class="spookknop">+ New cost</button>
+
+      <div class="budgettotaal"><span>Budget for September</span><b id="budgetsom">£1,690.57</b></div>
+
+      <div class="standaardrij">
+        <span class="tekst"><div class="kop">Make this my new default</div>
+          <div class="uitleg">On: every month from now on uses these amounts. Off: only September changes.</div></span>
+        <button class="schakel" id="standaardschakel" aria-label="Default on or off"></button>
+      </div>
+
+      <button class="knop">Save</button>
+      <p class="voetnoot">Expenses you already logged stay exactly where they are; only the length of the bars changes.</p>
+    </div>
+  </details>
+
+  <div class="kaart">
+    <h2>Where your money comes from</h2>
+    <p class="sub">Euro amounts are converted using your exchange rate. Every source has its own run time, so each
+      month only counts what actually arrives.</p>
+
+    <div class="bron">
+      <span class="ic" style="background:#EBDCFB;color:var(--kled)"><svg><use href="#i-beurs"/></svg></span>
+      <span class="tekst"><span class="naam">Student grant</span><span class="looptijd">every month</span></span>
+      <span class="geld"><div class="pond">£1,190.00</div><div class="euro">€1,400.00</div></span>
+    </div>
+    <div class="bron">
+      <span class="ic" style="background:#D6F0EE;color:var(--bood)"><svg><use href="#i-spaar"/></svg></span>
+      <span class="tekst"><span class="naam">Savings</span><span class="looptijd">every month</span></span>
+      <span class="geld"><div class="pond">£566.10</div><div class="euro">€666.00</div></span>
+    </div>
+    <div class="bron uit">
+      <span class="ic" style="background:#FCEBCB;color:#C98600"><svg><use href="#i-ov"/></svg></span>
+      <span class="tekst"><span class="naam">Travel allowance</span><span class="looptijd">Oct 2026 – Mar 2027 &middot; €110.00 p/m</span></span>
+      <span class="geld"><div class="pond">from Oct</div></span>
+    </div>
+    <div class="bron uit">
+      <span class="ic" style="background:#FFD9E7;color:var(--leuk)"><svg><use href="#i-extra"/></svg></span>
+      <span class="tekst"><span class="naam">One-off grant</span><span class="looptijd">Jan – Aug 2027 &middot; €281.25 p/m</span></span>
+      <span class="geld"><div class="pond">from Jan</div></span>
+    </div>
+    <details class="werkblok">
+      <summary>
+        <div class="bron">
+          <span class="ic" style="background:#E7DCE8;color:var(--rnd)"><svg><use href="#i-werk"/></svg></span>
+          <span class="tekst"><span class="naam">Work <span class="badge-vraag">varies per month</span></span>
+            <span class="tik">log individual jobs <svg><use href="#i-chevron"/></svg></span></span>
+          <span class="geld"><div class="pond">£0.00</div></span>
+        </div>
+      </summary>
+
+      <div class="werkbinnen">
+        <div class="werkleeg">
+          <div class="groot">Nothing earned in September yet</div>
+          <div class="klein">Add a job as soon as you get paid.</div>
+        </div>
+
+        <div class="klus voorbeeld">
+          <span class="tekst"><div class="wie">This is what a job looks like</div><div class="wanneer">12 Sep &middot; café shift</div></span>
+          <span class="op">£84.00</span>
+        </div>
+
+        <div class="tweekolom veldrij" style="margin-top:12px">
+          <label class="veld"><span>Date</span><input value="25/09/2026"></label>
+          <label class="veld"><span>Amount</span><input placeholder="£0.00"></label>
+        </div>
+        <label class="veld veldrij"><span>What for</span><input placeholder="E.g. three shifts"></label>
+        <button class="knop">Add job</button>
+
+        <div class="werktotaal"><span>Earned in September</span><b>£0.00</b></div>
+      </div>
+    </details>
+
+    <div class="totaalrij"><span>September income</span><b>£1,756.10</b></div>
+    <p class="voetnoot">The one-off grant is €2,250 paid in a single go. Instead of one spike in January, the app spreads it
+      over eight months so your monthly budget stays realistic. The travel allowance only starts in October,
+      so September is £93.50 leaner than the months after it. Work counts per month: whatever you earn in
+      September is added to September&rsquo;s income, and so to your &lsquo;left to spend&rsquo;.</p>
+  </div>
+
+  <details class="invoer" id="inkomstenblok">
+    <summary><span class="plus">&#9998;</span> Change your income</summary>
+    <div class="body">
+      <p class="sub" style="margin-top:0">Two kinds of change, one place.
+        <b>Did your grant or savings change for good?</b> Type the new amount and switch on
+        <i>Make this my new default</i> at the bottom &mdash; every month from now on follows it.
+        <b>Just this one month?</b> Leave that switch off and only September changes.
+        And a source that does not pay out at all this month goes off with its own switch.</p>
+
+      <div class="budgetrij inkomstenrij" data-valuta="EUR">
+        <span class="ic" style="background:#EBDCFB;color:var(--kled)"><svg><use href="#i-beurs"/></svg></span>
+        <span class="tekst"><div class="naam">Student grant</div><div class="omgerekend"></div></span>
+        <span class="munt">€</span>
+        <input value="1,400.00" data-standaard="1,400.00">
+        <button class="schakel aan" aria-label="Student grant on or off"></button>
+      </div>
+      <div class="budgetrij inkomstenrij" data-valuta="EUR">
+        <span class="ic" style="background:#D6F0EE;color:var(--bood)"><svg><use href="#i-spaar"/></svg></span>
+        <span class="tekst"><div class="naam">Savings</div><div class="omgerekend"></div></span>
+        <span class="munt">€</span>
+        <input value="666.00" data-standaard="666.00">
+        <button class="schakel aan" aria-label="Savings on or off"></button>
+      </div>
+      <div class="budgetrij inkomstenrij uitgezet" data-valuta="EUR">
+        <span class="ic" style="background:#FCEBCB;color:#C98600"><svg><use href="#i-ov"/></svg></span>
+        <span class="tekst"><div class="naam">Travel allowance</div><div class="omgerekend"></div></span>
+        <span class="munt">€</span>
+        <input value="110.00" data-standaard="110.00">
+        <button class="schakel" aria-label="Travel allowance on or off"></button>
+      </div>
+      <div class="budgetrij inkomstenrij uitgezet" data-valuta="EUR">
+        <span class="ic" style="background:#FFD9E7;color:var(--leuk)"><svg><use href="#i-extra"/></svg></span>
+        <span class="tekst"><div class="naam">One-off grant</div><div class="omgerekend"></div></span>
+        <span class="munt">€</span>
+        <input value="281.25" data-standaard="281.25">
+        <button class="schakel" aria-label="One-off grant on or off"></button>
+      </div>
+      <div class="budgetrij inkomstenrij" data-valuta="GBP">
+        <span class="ic" style="background:#E7DCE8;color:var(--rnd)"><svg><use href="#i-werk"/></svg></span>
+        <span class="tekst"><div class="naam">Work</div><div class="omgerekend"></div></span>
+        <span class="munt">£</span>
+        <input value="0.00" readonly>
+        <button class="schakel aan" aria-label="Work on or off"></button>
+      </div>
+
+      <button class="spookknop">+ New income source</button>
+
+      <div class="budgettotaal"><span>Income for September</span><b id="inkomstensom">£1,756.10</b></div>
+
+      <div class="standaardrij">
+        <span class="tekst"><div class="kop">Make this my new default</div>
+          <div class="uitleg">On: every month from now on uses these amounts. Off: only September changes.</div></span>
+        <button class="schakel" aria-label="Default on or off"></button>
+      </div>
+
+      <button class="knop">Save</button>
+      <p class="voetnoot">Work is the one you cannot type over here &mdash; that total comes from the jobs you log
+        above, so it always matches what you actually got paid. Change the exchange rate in Settings and every
+        euro amount is recalculated.</p>
+    </div>
+  </details>
+
+  <div class="kaart">
+    <h2>Settings</h2>
+    <p class="sub">Change these and the whole dashboard follows.</p>
+    <div class="tweekolom veldrij">
+      <label class="veld"><span>Year</span><input value="2026"></label>
+      <label class="veld"><span>Month</span><select><option>September</option></select></label>
+    </div>
+    <label class="veld"><span>Exchange rate &mdash; €1 =</span><input id="koers" value="£0.85"></label>
+  </div>
+</section>
+
+<!-- ================= EXPENSES ================= -->
+<section class="paneel" id="trans">
+  <div class="tip">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#FF2E7E" stroke-width="1.8" stroke-linecap="round"><use href="#i-info"/></svg>
+    <div><b>Enter it once.</b> Dashboard, bars and calendar all update straight away.</div>
+  </div>
+
+  <details class="invoer" open>
+    <summary><span class="plus">+</span> Add expense</summary>
+    <div class="body">
+      <div class="tweekolom veldrij">
+        <label class="veld"><span>Date</span><input value="25/09/2026"></label>
+        <label class="veld"><span>Amount</span><input placeholder="£0.00"></label>
+      </div>
+      <label class="veld veldrij"><span>Description</span><input placeholder="E.g. coffee at Monmouth"></label>
+      <label class="veld veldrij"><span>Category</span>
+        <select>
+          <option>Groceries</option><option>Rent</option><option>Fun &amp; going out</option>
+          <option>Clothes</option><option>Gas / water / electricity</option><option>Gym</option>
+          <option>Bike &amp; transport</option><option>Wifi</option><option>Odds &amp; ends</option><option>IHS health surcharge</option>
+        </select>
+      </label>
+      <button class="knop">Add</button>
+    </div>
+  </details>
+
+  <div class="kaart">
+    <h2>September 2026</h2>
+    <p class="sub"><span id="aantalposten">14</span> expenses &middot; <b id="somposten">£1,386.86</b> in total</p>
+    <p class="leeg" id="leegmelding">Nothing left in this month. Add an expense above.</p>
+
+    <div class="dagkop2">This week</div>
+    <div class="post" data-bedrag="30.00" data-oms="Oyster top-up">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#E7DCE8;color:var(--rnd)"><svg><use href="#i-rnd"/></svg></span>
+      <span class="tekst"><div class="oms">Oyster top-up</div><div class="cat2">24 Sep &middot; Odds &amp; ends</div></span>
+      <span class="bedrag">£30.00</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="post" data-bedrag="64.67" data-oms="IHS health surcharge">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#FBDFE4;color:#D25A72"><svg><use href="#i-ihs"/></svg></span>
+      <span class="tekst"><div class="oms">IHS health surcharge</div><div class="cat2">22 Sep &middot; monthly share</div></span>
+      <span class="bedrag">£64.67</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+
+    <div class="dagkop2">Earlier this month</div>
+    <div class="post" data-bedrag="58.75" data-oms="Brunch + Tate Modern">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#FFD9E7;color:var(--leuk)"><svg><use href="#i-leuk"/></svg></span>
+      <span class="tekst"><div class="oms">Brunch + Tate Modern</div><div class="cat2">19 Sep &middot; Fun &amp; going out</div></span>
+      <span class="bedrag">£58.75</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="post" data-bedrag="53.10" data-oms="Tesco groceries">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#D6F0EE;color:var(--bood)"><svg><use href="#i-bood"/></svg></span>
+      <span class="tekst"><div class="oms">Tesco groceries</div><div class="cat2">16 Sep &middot; Groceries</div></span>
+      <span class="bedrag">£53.10</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="post" data-bedrag="72.40" data-oms="Octopus Energy">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#FCEBCB;color:#C98600"><svg><use href="#i-gwl"/></svg></span>
+      <span class="tekst"><div class="oms">Octopus Energy</div><div class="cat2">14 Sep &middot; Gas / water / electricity</div></span>
+      <span class="bedrag">£72.40</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="post" data-bedrag="35.00" data-oms="Roundhouse gig">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#FFD9E7;color:var(--leuk)"><svg><use href="#i-leuk"/></svg></span>
+      <span class="tekst"><div class="oms">Roundhouse gig</div><div class="cat2">12 Sep &middot; Fun &amp; going out</div></span>
+      <span class="bedrag">£35.00</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="post" data-bedrag="119.99" data-oms="Winter coat, Zara">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#EBDCFB;color:var(--kled)"><svg><use href="#i-kled"/></svg></span>
+      <span class="tekst"><div class="oms">Winter coat, Zara</div><div class="cat2">11 Sep &middot; Clothes</div></span>
+      <span class="bedrag">£119.99</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="post" data-bedrag="61.35" data-oms="Sainsbury's groceries">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#D6F0EE;color:var(--bood)"><svg><use href="#i-bood"/></svg></span>
+      <span class="tekst"><div class="oms">Sainsbury's groceries</div><div class="cat2">9 Sep &middot; Groceries</div></span>
+      <span class="bedrag">£61.35</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="post" data-bedrag="10.00" data-oms="Wifi — Community Fibre">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#DCF2DE;color:#3E9E4A"><svg><use href="#i-wifi"/></svg></span>
+      <span class="tekst"><div class="oms">Wifi — Community Fibre</div><div class="cat2">7 Sep &middot; Wifi</div></span>
+      <span class="bedrag">£10.00</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="post" data-bedrag="16.90" data-oms="Bike hire — monthly">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#FBEEC0;color:#B08A00"><svg><use href="#i-swap"/></svg></span>
+      <span class="tekst"><div class="oms">Bike hire — monthly</div><div class="cat2">5 Sep &middot; Bike &amp; transport</div></span>
+      <span class="bedrag">£16.90</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="post" data-bedrag="42.50" data-oms="Drinks in Shoreditch">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#FFD9E7;color:var(--leuk)"><svg><use href="#i-leuk"/></svg></span>
+      <span class="tekst"><div class="oms">Drinks in Shoreditch</div><div class="cat2">4 Sep &middot; Fun &amp; going out</div></span>
+      <span class="bedrag">£42.50</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="post" data-bedrag="24.00" data-oms="Gym membership">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#E6F0C4;color:#6F8C00"><svg><use href="#i-gym"/></svg></span>
+      <span class="tekst"><div class="oms">Gym membership</div><div class="cat2">3 Sep &middot; Gym</div></span>
+      <span class="bedrag">£24.00</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="post" data-bedrag="48.20" data-oms="Tesco weekly shop">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#D6F0EE;color:var(--bood)"><svg><use href="#i-bood"/></svg></span>
+      <span class="tekst"><div class="oms">Tesco weekly shop</div><div class="cat2">2 Sep &middot; Groceries</div></span>
+      <span class="bedrag">£48.20</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="post" data-bedrag="750.00" data-oms="Rent — Hackney">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#FCE3DA;color:var(--huur)"><svg><use href="#i-huur"/></svg></span>
+      <span class="tekst"><div class="oms">Rent — Hackney</div><div class="cat2">1 Sep &middot; Rent</div></span>
+      <span class="bedrag">£750.00</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+
+    <div class="totaalrij"><span>September total</span><b id="somtotaal">£1,386.86</b></div>
+  </div>
+</section>
+
+<!-- ================= CALENDAR ================= -->
+<section class="paneel" id="kal">
+  <div class="tip">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#9B5DE5" stroke-width="1.8" stroke-linecap="round"><use href="#i-info"/></svg>
+    <div><b>Your month at a glance.</b> The fuller the colour, the more you spent that day. Tap a day for the details.</div>
+  </div>
+
+  <div class="kaart">
+    <h2>September 2026</h2>
+    <p class="sub">£1,386.86 spent &middot; 14 expenses &middot; 17 days with nothing spent</p>
+    <div class="kal">
+      <div class="kalkop">M</div><div class="kalkop">T</div><div class="kalkop">W</div>
+      <div class="kalkop">T</div><div class="kalkop">F</div><div class="kalkop">S</div><div class="kalkop">S</div>
+
+      <div class="dag buiten"><div class="nr">31</div><div class="bd">·</div><div class="stip geen"></div></div>
+      <div class="dag vol"><div class="nr">1</div><div class="bd">750</div><div class="stip"></div></div>
+      <div class="dag middel"><div class="nr">2</div><div class="bd">48</div><div class="stip geen"></div></div>
+      <div class="dag middel"><div class="nr">3</div><div class="bd">24</div><div class="stip"></div></div>
+      <div class="dag middel"><div class="nr">4</div><div class="bd">43</div><div class="stip"></div></div>
+      <div class="dag weekend"><div class="nr">5</div><div class="bd">17</div><div class="stip geen"></div></div>
+      <div class="dag weekend"><div class="nr">6</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+
+      <div class="dag middel"><div class="nr">7</div><div class="bd">10</div><div class="stip geen"></div></div>
+      <div class="dag"><div class="nr">8</div><div class="bd leeg">—</div><div class="stip"></div></div>
+      <div class="dag middel"><div class="nr">9</div><div class="bd">61</div><div class="stip geen"></div></div>
+      <div class="dag"><div class="nr">10</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+      <div class="dag vol"><div class="nr">11</div><div class="bd">120</div><div class="stip geen"></div></div>
+      <div class="dag weekend"><div class="nr">12</div><div class="bd">35</div><div class="stip"></div></div>
+      <div class="dag weekend"><div class="nr">13</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+
+      <div class="dag middel"><div class="nr">14</div><div class="bd">72</div><div class="stip geen"></div></div>
+      <div class="dag"><div class="nr">15</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+      <div class="dag middel"><div class="nr">16</div><div class="bd">53</div><div class="stip geen"></div></div>
+      <div class="dag"><div class="nr">17</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+      <div class="dag"><div class="nr">18</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+      <div class="dag weekend"><div class="nr">19</div><div class="bd">59</div><div class="stip"></div></div>
+      <div class="dag weekend"><div class="nr">20</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+
+      <div class="dag"><div class="nr">21</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+      <div class="dag middel"><div class="nr">22</div><div class="bd">65</div><div class="stip geen"></div></div>
+      <div class="dag"><div class="nr">23</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+      <div class="dag middel vandaag"><div class="nr">24</div><div class="bd">30</div><div class="stip geen"></div></div>
+      <div class="dag"><div class="nr">25</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+      <div class="dag weekend"><div class="nr">26</div><div class="bd leeg">—</div><div class="stip"></div></div>
+      <div class="dag weekend"><div class="nr">27</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+
+      <div class="dag"><div class="nr">28</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+      <div class="dag"><div class="nr">29</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+      <div class="dag"><div class="nr">30</div><div class="bd leeg">—</div><div class="stip geen"></div></div>
+      <div class="dag buiten"><div class="nr">1</div><div class="bd">·</div><div class="stip geen"></div></div>
+      <div class="dag buiten"><div class="nr">2</div><div class="bd">·</div><div class="stip geen"></div></div>
+      <div class="dag buiten"><div class="nr">3</div><div class="bd">·</div><div class="stip geen"></div></div>
+      <div class="dag buiten"><div class="nr">4</div><div class="bd">·</div><div class="stip geen"></div></div>
+    </div>
+    <div class="kallegenda">
+      <span><i style="background:#FFF8F1"></i>Little</span>
+      <span><i style="background:#FFE6D2;border-color:#F7D2B8"></i>Some</span>
+      <span><i style="background:linear-gradient(150deg,#FF5A3C,#FF2E7E);border-color:transparent"></i>A lot</span>
+      <span><i style="background:#E3D08F;border-color:transparent;border-radius:50%"></i>Note</span>
+    </div>
+  </div>
+
+  <div class="kaart dagdetail">
+    <div class="datumkop"><span class="d">Thursday 24 September</span><span class="t">£30.00</span></div>
+    <div class="post" data-bedrag="30.00" data-oms="Oyster top-up">
+      <button class="postrij" type="button" aria-expanded="false"><span class="ic" style="background:#E7DCE8;color:var(--rnd)"><svg><use href="#i-rnd"/></svg></span>
+      <span class="tekst"><div class="oms">Oyster top-up</div><div class="cat2">Odds &amp; ends</div></span>
+      <span class="bedrag">£30.00</span><span class="pijl"><svg><use href="#i-chevron"/></svg></span></button>
+      <div class="postacties">
+        <button type="button" class="wijzig"><svg><use href="#i-potlood"/></svg>Edit</button>
+        <button type="button" class="weg"><svg><use href="#i-prullenbak"/></svg>Delete</button>
+      </div>
+    </div>
+    <div class="notitie"><div class="kop">Note</div>Book Brighton for Friday — train tickets are cheaper before noon.</div>
+  </div>
+</section>
+
+</main>
+
+<div class="terugbalk" id="terugbalk" role="status" aria-live="polite">
+  <span class="melding" id="terugtekst"></span>
+  <button type="button" id="terugknop"><svg><use href="#i-terug"/></svg>Undo</button>
+</div>
+</div>
+
+<div class="tabbalk">
+  <div class="binnen">
+    <button class="actief" data-tab="dash"><span class="bol"><svg><use href="#i-tabdash"/></svg></span>Dashboard</button>
+    <button data-tab="trans"><span class="bol"><svg><use href="#i-tablijst"/></svg></span>Expenses</button>
+    <button data-tab="kal"><span class="bol"><svg><use href="#i-tabkal"/></svg></span>Calendar</button>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.tabbalk button').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.tabbalk button').forEach(function(x){x.classList.remove('actief')});
+    document.querySelectorAll('.paneel').forEach(function(p){p.classList.remove('actief')});
+    b.classList.add('actief');
+    document.getElementById(b.dataset.tab).classList.add('actief');
+    window.scrollTo(0,0);
+  });
+});
+
+/* Het budget- en het inkomstenblok doen in deze mockup al echt iets, zodat je
+   kunt voelen hoe het werkt: schakel een post uit of typ een ander bedrag en
+   het maandtotaal telt meteen opnieuw op. */
+function naarGetal(t){ return parseFloat(String(t).replace(/,/g,'').replace(/[^0-9.-]/g,'')) || 0; }
+function naarTekst(n){ return '£' + n.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+/* Eén schakelaar-afspraak voor beide blokken: de knop houdt zijn eigen stand
+   bij, de rij toont hem, en daarna telt het blok opnieuw op. */
+function koppelRijen(blok, rijen, herbereken){
+  rijen.forEach(function(rij){
+    var veld = rij.querySelector('input');
+    /* De oorspronkelijke standaard onthouden we apart, zodat "maak dit mijn
+       standaard" weer terug te draaien is. */
+    if(veld.dataset.standaard !== undefined) veld.dataset.oorspronkelijk = veld.dataset.standaard;
+    if(!veld.readOnly) veld.addEventListener('input', herbereken);
+    rij.querySelector('.schakel').addEventListener('click', function(){
+      this.classList.toggle('aan');
+      rij.classList.toggle('uitgezet', !this.classList.contains('aan'));
+      herbereken();
+    });
+  });
+
+  /* "Maak dit mijn standaard" moet echt iets doen, anders is het een loze
+     belofte: aan betekent dat de getypte bedragen de nieuwe normaal worden,
+     dus verdwijnt het "changed"-label en verandert de "normally"-regel mee.
+     Uit zet alles terug op waar je mee begon. */
+  var vast = blok.querySelector('.standaardrij .schakel');
+  if(vast) vast.addEventListener('click', function(){
+    var aan = this.classList.toggle('aan');
+    rijen.forEach(function(rij){
+      var veld = rij.querySelector('input');
+      if(veld.dataset.standaard === undefined) return;
+      veld.dataset.standaard = aan ? veld.value.trim() : veld.dataset.oorspronkelijk;
+    });
+    herbereken();
+  });
+
+  herbereken();
+}
+
+(function(){
+  var blok = document.getElementById('budgetblok');
+  if(!blok) return;
+  var rijen = blok.querySelectorAll('.budgetrij');
+
+  function herbereken(){
+    var som = 0;
+    rijen.forEach(function(rij){
+      var veld = rij.querySelector('input');
+      var standaard = veld.dataset.standaard;
+      var uit = rij.classList.contains('uitgezet');
+      rij.classList.toggle('gewijzigd', !uit && veld.value.trim() !== standaard);
+      rij.querySelector('.standaard').textContent =
+        uit ? 'not counted in September' : 'normally ' + naarTekst(naarGetal(standaard));
+      if(!uit) som += naarGetal(veld.value);
+    });
+    document.getElementById('budgetsom').textContent = naarTekst(som);
+  }
+
+  koppelRijen(blok, rijen, herbereken);
+})();
+
+/* De inkomsten staan deels in euro's. Die rekenen we om met de koers uit
+   Instellingen, zodat één wijziging daar meteen overal doortelt. */
+(function(){
+  var blok = document.getElementById('inkomstenblok');
+  if(!blok) return;
+  var rijen = blok.querySelectorAll('.inkomstenrij');
+  var koersveld = document.getElementById('koers');
+
+  function koers(){ var k = naarGetal(koersveld && koersveld.value); return k > 0 ? k : 0.85; }
+
+  function herbereken(){
+    var som = 0;
+    rijen.forEach(function(rij){
+      var euro = rij.dataset.valuta === 'EUR';
+      var veld = rij.querySelector('input');
+      var standaard = veld.dataset.standaard;
+      var bedrag = naarGetal(veld.value);
+      var pond = euro ? bedrag * koers() : bedrag;
+      var uit = rij.classList.contains('uitgezet');
+
+      /* Zelfde afspraak als bij het budget: wijkt het bedrag af van je
+         standaard, dan zegt de rij dat erbij. Zo zie je in één oogopslag
+         wat je voor deze maand hebt losgetrokken. */
+      var afwijkend = !uit && standaard !== undefined && veld.value.trim() !== standaard;
+      rij.classList.toggle('gewijzigd', afwijkend);
+
+      var regel;
+      if(uit)            regel = 'not counted in September';
+      else if(!euro)     regel = 'from the jobs you logged';
+      else               regel = '= ' + naarTekst(pond);
+      if(afwijkend)      regel += ' · normally €' + naarGetal(standaard)
+                                    .toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
+      rij.querySelector('.omgerekend').textContent = regel;
+
+      if(!uit) som += pond;
+    });
+    document.getElementById('inkomstensom').textContent = naarTekst(som);
+  }
+
+  if(koersveld) koersveld.addEventListener('input', herbereken);
+  koppelRijen(blok, rijen, herbereken);
+})();
+
+/* ---------- een uitgave corrigeren of weggooien ----------
+   Tik een regel aan en er klapt een strookje open met Edit en Delete.
+   Weggooien vraagt niet "weet je het zeker?" maar geeft je een balkje met
+   Undo: sneller bij de gewone klik, en veiliger bij de misklik, want je
+   ziet meteen wát er weg is. */
+(function(){
+  var lijst = document.getElementById('trans');
+  if(!lijst) return;
+
+  var balk  = document.getElementById('terugbalk');
+  var tekst = document.getElementById('terugtekst');
+  var knop  = document.getElementById('terugknop');
+  var klok  = null;
+  var laatstWeg = [];
+
+  /* Dezelfde uitgave staat op twee plekken: in de lijst en in de dagkaart
+     van de kalender. Weghalen moet ze allebei pakken, anders spreekt de app
+     zichzelf tegen. */
+  function zelfdePost(oms){
+    return [].filter.call(document.querySelectorAll('.post'), function(p){
+      return p.dataset.oms === oms;
+    });
+  }
+
+  function hertel(){
+    var open = [].filter.call(lijst.querySelectorAll('.post'), function(p){
+      return !p.classList.contains('verwijderd');
+    });
+    var som = open.reduce(function(t,p){ return t + naarGetal(p.dataset.bedrag); }, 0);
+    document.getElementById('aantalposten').textContent = open.length;
+    document.getElementById('somposten').textContent = naarTekst(som);
+    document.getElementById('somtotaal').textContent = naarTekst(som);
+    document.getElementById('leegmelding').style.display = open.length ? 'none' : 'block';
+
+    /* Een lege dagkop laten staan zou raar ogen, dus die verdwijnt mee. */
+    lijst.querySelectorAll('.dagkop2').forEach(function(kop){
+      var iets = false, n = kop.nextElementSibling;
+      while(n && n.classList.contains('post')){
+        if(!n.classList.contains('verwijderd')) iets = true;
+        n = n.nextElementSibling;
+      }
+      kop.style.display = iets ? '' : 'none';
+    });
+  }
+
+  function toonBalk(oms){
+    tekst.innerHTML = '<b>' + oms + '</b> deleted';
+    balk.classList.add('zichtbaar');
+    clearTimeout(klok);
+    klok = setTimeout(function(){ balk.classList.remove('zichtbaar'); }, 6000);
+  }
+
+  document.querySelectorAll('.post').forEach(function(post){
+    var rij = post.querySelector('.postrij');
+
+    rij.addEventListener('click', function(){
+      var open = post.classList.toggle('open');
+      rij.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    post.querySelector('.weg').addEventListener('click', function(){
+      laatstWeg = zelfdePost(post.dataset.oms);
+      laatstWeg.forEach(function(p){
+        p.classList.add('verwijderd');
+        p.classList.remove('open');
+      });
+      hertel();
+      toonBalk(post.dataset.oms);
+    });
+
+    post.querySelector('.wijzig').addEventListener('click', function(){
+      /* Edit vult het invoerformulier bovenaan met wat er al staat, zodat je
+         alleen het foute veld hoeft aan te raken in plaats van alles opnieuw
+         te typen. De datum en de categorie halen we uit de regel zelf. */
+      var invoer = lijst.querySelector('details.invoer');
+      var velden = invoer.querySelectorAll('input');
+      var onder  = post.querySelector('.cat2').textContent;   // "11 Sep · Clothes"
+      var deel   = onder.split('·');
+      var datum  = (deel[0] || '').trim();
+      var cat    = (deel[1] || '').trim();
+
+      invoer.open = true;
+      var dag = datum.match(/^(\d{1,2})\s+([A-Za-z]{3})/);
+      if(dag){
+        var maanden = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',
+                       Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+        var mm = maanden[dag[2]];
+        if(mm) velden[0].value = ('0' + dag[1]).slice(-2) + '/' + mm + '/2026';
+      }
+      velden[1].value = post.querySelector('.bedrag').textContent;
+      velden[2].value = post.dataset.oms;
+
+      /* Meestal staat de categorie onder de regel. Staat er iets anders
+         (bij de IHS-regel staat er "monthly share"), dan proberen we de
+         omschrijving, zodat het vakje nooit op een vorige keuze blijft staan. */
+      var keuze = invoer.querySelector('select');
+      var treffer = null;
+      [].forEach.call(keuze.options, function(o){
+        var tekst = o.textContent.trim();
+        if(tekst === cat) treffer = o.value;
+        else if(!treffer && tekst === post.dataset.oms) treffer = o.value;
+      });
+      if(treffer !== null) keuze.value = treffer;
+
+      invoer.querySelector('.knop').textContent = 'Save changes';
+      post.classList.remove('open');
+      invoer.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+
+  knop.addEventListener('click', function(){
+    laatstWeg.forEach(function(p){ p.classList.remove('verwijderd'); });
+    laatstWeg = [];
+    hertel();
+    balk.classList.remove('zichtbaar');
+    clearTimeout(klok);
+  });
+
+  hertel();
+})();
+</script>
+</body>
+</html>
