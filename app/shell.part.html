@@ -97,6 +97,13 @@ h1{display:flex;align-items:center;gap:9px}
   box-shadow:0 3px 9px rgba(36,20,35,.22)}
 .beginscherm b{display:block;font-size:13.5px;margin-bottom:3px}
 .beginscherm p{margin:0;font-size:11.5px;line-height:1.45;color:var(--zacht);font-weight:600}
+
+/* Aanwijzing bij een nog lege app. Zelfde vorm als .tip, maar in het limoen
+   van de accentkleur, zodat het uitnodigt en niet waarschuwt. */
+.leegtip{background:#F4FBDD;border:1.5px solid #D8F34B;border-radius:15px;padding:12px 13px;margin:0 0 12px}
+.leegtip[hidden]{display:none}
+.leegtip b{display:block;font-size:13px;margin-bottom:3px}
+.leegtip p{margin:0;font-size:11.5px;line-height:1.45;color:#5F7000;font-weight:600}
 </style>
 </head>
 <body>
@@ -226,6 +233,15 @@ h1{display:flex;align-items:center;gap:9px}
     <h2>Where your money comes from</h2>
     <p class="sub">Euro amounts are converted using your exchange rate. Every source has its own run time, so each
       month only counts what actually arrives.</p>
+
+    <!-- Bij een verse app staat alle inkomen op 0. Zonder deze regel ziet het
+         dashboard er dan uit alsof er iets stuk is, in plaats van alsof er nog
+         iets ingevuld moet worden. -->
+    <div class="leegtip" id="inkomenLeeg" hidden>
+      <b>Fill in your income first</b>
+      <p>All sources start at zero. Tap <i>Edit income</i> below and enter what you actually
+        get each month &mdash; the whole dashboard follows from it.</p>
+    </div>
 
     <div id="bronnen"></div>
 

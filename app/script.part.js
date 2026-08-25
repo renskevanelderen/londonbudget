@@ -30,13 +30,20 @@ var CATEGORIEEN = [
 
 /* `van` en `tot` zijn maandsleutels. Een bron telt alleen mee in de maanden
    binnen haar looptijd; daarbuiten staat ze vanzelf uit. Zo hoef je in
-   september niets te doen om de OV-vergoeding weg te houden. */
+   september niets te doen om de OV-vergoeding weg te houden.
+
+   De bedragen staan hier met opzet op 0. Deze code staat openbaar op GitHub,
+   en wat iemand aan beurs of spaargeld heeft hoort niet in een publiek
+   bestand. Je vult ze één keer in op je eigen telefoon (tik op Income op het
+   dashboard); vanaf dan staan ze in localStorage en komen ze nergens anders.
+   Voor een medestudent die de app opent is dit trouwens ook het juiste
+   beginpunt: die wil zijn eigen bedragen zien, niet die van mij. */
 var BRONNEN = [
-  {id:'beurs', naam:'Student grant',   icoon:'i-beurs', zacht:'#EBDCFB', icoonkleur:'var(--kled)', valuta:'EUR', bedrag:1400,   van:null,      tot:null},
-  {id:'spaar', naam:'Savings',         icoon:'i-spaar', zacht:'#D6F0EE', icoonkleur:'var(--bood)', valuta:'EUR', bedrag:666,    van:null,      tot:null},
-  {id:'ov',    naam:'Travel allowance',icoon:'i-ov',    zacht:'#FCEBCB', icoonkleur:'#C98600',     valuta:'EUR', bedrag:110,    van:'2026-10', tot:'2027-03'},
-  {id:'extra', naam:'One-off grant',   icoon:'i-extra', zacht:'#FFD9E7', icoonkleur:'var(--leuk)', valuta:'EUR', bedrag:281.25, van:'2027-01', tot:'2027-08'},
-  {id:'werk',  naam:'Work',            icoon:'i-werk',  zacht:'#E7DCE8', icoonkleur:'var(--rnd)',  valuta:'GBP', bedrag:0,      van:null,      tot:null, afgeleid:true}
+  {id:'beurs', naam:'Student grant',   icoon:'i-beurs', zacht:'#EBDCFB', icoonkleur:'var(--kled)', valuta:'EUR', bedrag:0, van:null,      tot:null},
+  {id:'spaar', naam:'Savings',         icoon:'i-spaar', zacht:'#D6F0EE', icoonkleur:'var(--bood)', valuta:'EUR', bedrag:0, van:null,      tot:null},
+  {id:'ov',    naam:'Travel allowance',icoon:'i-ov',    zacht:'#FCEBCB', icoonkleur:'#C98600',     valuta:'EUR', bedrag:0, van:'2026-10', tot:'2027-03'},
+  {id:'extra', naam:'One-off grant',   icoon:'i-extra', zacht:'#FFD9E7', icoonkleur:'var(--leuk)', valuta:'EUR', bedrag:0, van:'2027-01', tot:'2027-08'},
+  {id:'werk',  naam:'Work',            icoon:'i-werk',  zacht:'#E7DCE8', icoonkleur:'var(--rnd)',  valuta:'GBP', bedrag:0, van:null,      tot:null, afgeleid:true}
 ];
 
 /* Nieuwe posten die jij zelf verzint krijgen om de beurt een kleur, zodat
@@ -384,6 +391,15 @@ function tekenBronnen(c){
   var werk = c.inkomen.filter(function(r){ return r.bron.afgeleid; })[0];
   $('werkKop').textContent = pond(werk ? werk.inPond : 0);
   $('inkomenTotaal').textContent = pond(c.inkomenSom);
+
+  /* Alleen bij écht nul, niet bij een lege maand: staat je beurs ingevuld maar
+     valt deze maand buiten elke looptijd, dan is 0 een juist antwoord en heb
+     je geen aanwijzing nodig. Daarom kijken we naar de ingevulde bedragen en
+     niet naar het maandtotaal. */
+  var nooitIetsIngevuld = st.bronnen.every(function(b){
+    return b.afgeleid || !b.bedrag;
+  });
+  $('inkomenLeeg').hidden = !nooitIetsIngevuld;
 
   /* De voetnoot legt uit waaróm dit maandbedrag zo is; dat verschilt per
      maand, dus schrijven we hem hier op maat. */
@@ -997,7 +1013,7 @@ $('dagdetail').addEventListener('input', function(e){
 $('voorbeeldknop').addEventListener('click', function(){
   var m = gekozenMaand;
   var v = [
-    [1,750,'Rent — Hackney','huur'], [2,48.20,'Tesco weekly shop','bood'],
+    [1,750,'Rent','huur'], [2,48.20,'Tesco weekly shop','bood'],
     [3,24,'Gym membership','gym'],   [4,42.50,'Drinks in Shoreditch','leuk'],
     [5,16.90,'Bike hire — monthly','fiets'], [7,10,'Wifi — Community Fibre','wifi'],
     [9,61.35,"Sainsbury's groceries",'bood'], [11,119.99,'Winter coat, Zara','kled'],
