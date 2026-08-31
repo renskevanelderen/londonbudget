@@ -7,6 +7,19 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#241423">
 <title>London Budget</title>
+<!-- De app hoort niet in Google. Hij staat wel openbaar op internet — dat kan
+     niet anders bij GitHub Pages — maar hij is alleen te vinden als je het
+     adres krijgt. Deze regel is wat dat regelt: zoekmachines nemen hem niet op.
+
+     Een robots.txt zou hier níét werken en dat is een valkuil: crawlers lezen
+     dat bestand alleen op de hoofdmap van een domein, en deze app staat in een
+     submap van github.io. Zo'n bestand zou er wel staan en niets doen. Deze
+     meta geldt per pagina en werkt dus wel.
+
+     Let op: dit is geen slot. Wie het adres heeft, kan erin. Dat hoeft ook
+     niet anders, want er valt niets te halen: alle bedragen blijven in de
+     browser van degene die ze invult en komen hier nooit langs. -->
+<meta name="robots" content="noindex, nofollow">
 <!-- Zonder deze regel maakt iOS bij "Add to Home Screen" zelf een miniatuur
      van het dashboard als icoon: een onleesbaar propje. De 180px is wat iOS
      pakt; de manifest regelt hetzelfde op Android. -->
