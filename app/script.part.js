@@ -47,14 +47,60 @@ var BRONNEN = [
 ];
 
 /* Nieuwe posten die jij zelf verzint krijgen om de beurt een kleur, zodat
-   ze niet allemaal grijs worden. */
+   ze niet allemaal grijs worden. Dit is óók de kleurkiezer in het bewerkvak.
+
+   Elke regel is één samenhangend setje: het zachte vlak achter het icoon, de
+   kleur van het icoon zelf en de kleur van het balkje op het dashboard. Ze
+   staan bij elkaar omdat ze bij elkaar horen — kon je ze los kiezen, dan was
+   een lichtroze balk bij een dieppaars icoon een kwestie van tijd.
+
+   De tien kleuren zijn precies die van de standaardposten hierboven, zodat een
+   bestaande post altijd een bolletje in deze rij heeft dat aan staat. */
 var PALET = [
-  {icoon:'i-rnd',  zacht:'#E7DCE8', icoonkleur:'var(--rnd)',  balk:'var(--rnd)'},
-  {icoon:'i-leuk', zacht:'#FFD9E7', icoonkleur:'var(--leuk)', balk:'var(--leuk)'},
-  {icoon:'i-bood', zacht:'#D6F0EE', icoonkleur:'var(--bood)', balk:'var(--bood)'},
-  {icoon:'i-kled', zacht:'#EBDCFB', icoonkleur:'var(--kled)', balk:'var(--kled)'},
-  {icoon:'i-gwl',  zacht:'#FCEBCB', icoonkleur:'#C98600',     balk:'var(--gwl)'}
+  {naam:'Coral',  zacht:'#FCE3DA', icoonkleur:'var(--huur)', balk:'var(--huur)'},
+  {naam:'Teal',   zacht:'#D6F0EE', icoonkleur:'var(--bood)', balk:'var(--bood)'},
+  {naam:'Pink',   zacht:'#FFD9E7', icoonkleur:'var(--leuk)', balk:'var(--leuk)'},
+  {naam:'Purple', zacht:'#EBDCFB', icoonkleur:'var(--kled)', balk:'var(--kled)'},
+  {naam:'Amber',  zacht:'#FCEBCB', icoonkleur:'#C98600',     balk:'var(--gwl)'},
+  {naam:'Olive',  zacht:'#E6F0C4', icoonkleur:'#6F8C00',     balk:'var(--gym)'},
+  {naam:'Yellow', zacht:'#FBEEC0', icoonkleur:'#B08A00',     balk:'var(--swap)'},
+  {naam:'Green',  zacht:'#DCF2DE', icoonkleur:'#3E9E4A',     balk:'var(--wifi)'},
+  {naam:'Mauve',  zacht:'#E7DCE8', icoonkleur:'var(--rnd)',  balk:'var(--rnd)'},
+  {naam:'Rose',   zacht:'#FBDFE4', icoonkleur:'#D25A72',     balk:'var(--ihs)'}
 ];
+
+/* Een nieuwe post krijgt een neutraal icoon en geen gok. Eerder hing het icoon
+   aan de kleur die hij toevallig kreeg, en dan staat er een huisje bij "Books".
+   Fout raden is hier erger dan niets zeggen, en je kunt het icoon nu zelf
+   kiezen in het bewerkvak. */
+var STANDAARDICOON = 'i-rnd';
+
+/* De eerste kleur die nog niemand heeft. Simpelweg doortellen ging mis zodra
+   er evenveel posten als kleuren waren: de nieuwe kreeg dan dezelfde kleur als
+   de eerste in de lijst. Zijn ze allemaal bezet, dan telt hij alsnog door —
+   dan is dubbel onvermijdelijk. */
+function vrijeKleur(lijst){
+  for(var i = 0; i < PALET.length; i++){
+    var bezet = lijst.some(function(x){ return x.zacht === PALET[i].zacht; });
+    if(!bezet) return PALET[i];
+  }
+  return PALET[lijst.length % PALET.length];
+}
+
+/* De iconen die je aan een post kunt hangen. Alleen de inhoudelijke: de
+   pijltjes, tabbladen en het prullenbakje uit de sprite horen bij de app zelf
+   en zeggen niets over een kostenpost. */
+var ICONEN = ['i-huur','i-bood','i-leuk','i-swap','i-ov','i-gwl','i-gym','i-wifi',
+              'i-kled','i-ihs','i-beurs','i-spaar','i-extra','i-werk','i-rnd'];
+
+/* Welk bolletje in de kleurkiezer staat aan? Een post bewaart geen index maar
+   de kleuren zelf — dat was al zo voordat er een kiezer was, en het omzetten
+   zou de opslag van iedereen die de app al gebruikt moeten verbouwen. We
+   zoeken de kleur dus terug op het zachte vlak, dat per palet-regel uniek is. */
+function paletIndexVan(item){
+  for(var i = 0; i < PALET.length; i++) if(PALET[i].zacht === item.zacht) return i;
+  return -1;
+}
 
 var MAANDEN = ['January','February','March','April','May','June',
                'July','August','September','October','November','December'];
@@ -65,6 +111,18 @@ var DAGEN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturd
    --------------------------------------------------------------- */
 var SLEUTEL = 'londonbudget.v1';
 var st, gekozenMaand, gekozenDag = null, bewerktId = null;
+
+/* Welk bewerkvak onder een rij openstaat: {soort, id}, of null.
+
+   Eén variabele voor de hele app, dus er kan er maar één tegelijk open zijn.
+   Dat is expres: twee opengeklapte vakken maken de lijst onleesbaar, en je
+   bent toch met één post tegelijk bezig. Open je een tweede, dan klapt de
+   eerste vanzelf dicht. */
+var openBewerk = null;
+
+function zoekOp(lijst, id){
+  return lijst.filter(function(x){ return x.id === id; })[0] || null;
+}
 
 function verseStaat(){
   return {
@@ -349,20 +407,62 @@ function tekenBalken(c){
   $('balkenTotaal').textContent = pond(c.uitSom);
 }
 
+/* Het uitklapvak onder een rij: naam, kleur, icoon, looptijd en weghalen.
+   Het staat als broertje ná de rij in dezelfde houder, zodat het meeschuift
+   als de lijst opnieuw wordt opgebouwd. */
+function bewerkHtml(item, soort){
+  if(!openBewerk || openBewerk.soort !== soort || openBewerk.id !== item.id) return '';
+  var gekozen = paletIndexVan(item);
+
+  var h = '<div class="rijbewerk" data-bewerk="' + item.id + '">' +
+    '<label class="veld"><span>Name</span>' +
+      '<input class="hernoem" value="' + ontsnap(item.naam) + '" placeholder="Name"></label>' +
+    '<div class="veld"><span>Colour</span><div class="kleurkeuze">' +
+      PALET.map(function(k, i){
+        return '<button type="button" class="kleurknop' + (i === gekozen ? ' aan' : '') +
+          '" data-kleur="' + i + '" style="background:' + k.balk + '" aria-label="' + k.naam + '"></button>';
+      }).join('') +
+    '</div></div>' +
+    '<div class="veld"><span>Icon</span><div class="icoonkeuze">' +
+      ICONEN.map(function(ic){
+        return '<button type="button" class="icoonknop' + (ic === item.icoon ? ' aan' : '') +
+          '" data-icoon="' + ic + '" aria-label="Icon"><svg><use href="#' + ic + '"/></svg></button>';
+      }).join('') +
+    '</div></div>';
+
+  /* Alleen inkomsten hebben een looptijd. De bijbaan valt erbuiten: die telt
+     mee zodra je diensten invult, dus een periode zou daar niets sturen. */
+  if(soort === 'inkomen' && !item.afgeleid){
+    h += '<div class="veld"><span>Period &mdash; leave empty for every month</span>' +
+      '<div class="tweekolom">' +
+        '<input type="month" class="vanaf" value="' + (item.van || '') + '" aria-label="From which month">' +
+        '<input type="month" class="totmet" value="' + (item.tot || '') + '" aria-label="Up to and including which month">' +
+      '</div>' +
+      '<p class="uitleg">Outside these months the source simply does not count.</p></div>';
+  }
+
+  h += '<div class="knoprij"><button type="button" class="knop klein rijklaar">Done</button>' +
+    (item.afgeleid ? '' : '<button type="button" class="knop gevaar klein rijweg">Delete</button>') +
+    '</div></div>';
+  return h;
+}
+
 function tekenBudgetrijen(c){
   $('budgetrijen').innerHTML = c.budget.map(function(r){
     var afwijkend = r.aan && Math.abs(r.bedrag - r.standaard) > 0.005;
     var onder = !r.aan ? 'not counted in ' + maandNaam(c.sleutel)
               : afwijkend ? 'normally ' + pond(r.standaard) : '';
+    var open = openBewerk && openBewerk.soort === 'budget' && openBewerk.id === r.cat.id;
     return '<div class="budgetrij' + (r.aan ? '' : ' uitgezet') + (afwijkend ? ' gewijzigd' : '') +
-             '" data-id="' + r.cat.id + '">' +
-      '<span class="ic" style="background:' + r.cat.zacht + ';color:' + r.cat.icoonkleur + '">' +
-        '<svg><use href="#' + r.cat.icoon + '"/></svg></span>' +
-      '<span class="tekst"><div class="naam">' + ontsnap(r.cat.naam) + '</div>' +
+             (open ? ' openbewerk' : '') + '" data-id="' + r.cat.id + '">' +
+      '<button type="button" class="ic" style="background:' + r.cat.zacht + ';color:' + r.cat.icoonkleur +
+        '" aria-label="Rename or delete ' + ontsnap(r.cat.naam) + '">' +
+        '<svg><use href="#' + r.cat.icoon + '"/></svg></button>' +
+      '<span class="tekst"><button type="button" class="naam">' + ontsnap(r.cat.naam) + '</button>' +
         '<div class="standaard">' + onder + '</div></span>' +
       '<input inputmode="decimal" value="' + r.bedrag.toFixed(2) + '" aria-label="' + ontsnap(r.cat.naam) + ' budget">' +
       '<button class="schakel' + (r.aan ? ' aan' : '') + '" aria-label="' + ontsnap(r.cat.naam) + ' on or off"></button>' +
-    '</div>';
+    '</div>' + bewerkHtml(r.cat, 'budget');
   }).join('');
   $('budgetsom').textContent = pond(c.budgetSom);
 }
@@ -450,17 +550,20 @@ function tekenInkomstenrijen(c){
     if(afwijkend) regel += (regel ? ' · ' : '') + 'normally ' +
       (b.valuta === 'EUR' ? euro(r.standaard) : pond(r.standaard));
 
+    var open = openBewerk && openBewerk.soort === 'inkomen' && openBewerk.id === b.id;
+
     return '<div class="budgetrij inkomstenrij' + (r.aan ? '' : ' uitgezet') + (afwijkend ? ' gewijzigd' : '') +
-             '" data-id="' + b.id + '">' +
-      '<span class="ic" style="background:' + b.zacht + ';color:' + b.icoonkleur + '">' +
-        '<svg><use href="#' + b.icoon + '"/></svg></span>' +
-      '<span class="tekst"><div class="naam">' + ontsnap(b.naam) + '</div>' +
+             (open ? ' openbewerk' : '') + '" data-id="' + b.id + '">' +
+      '<button type="button" class="ic" style="background:' + b.zacht + ';color:' + b.icoonkleur +
+        '" aria-label="Rename or delete ' + ontsnap(b.naam) + '">' +
+        '<svg><use href="#' + b.icoon + '"/></svg></button>' +
+      '<span class="tekst"><button type="button" class="naam">' + ontsnap(b.naam) + '</button>' +
         '<div class="omgerekend">' + regel + '</div></span>' +
       '<span class="munt">' + (b.valuta === 'EUR' ? '€' : '£') + '</span>' +
       '<input inputmode="decimal" value="' + r.bedrag.toFixed(2) + '"' +
         (b.afgeleid ? ' readonly' : '') + ' aria-label="' + ontsnap(b.naam) + ' amount">' +
       '<button class="schakel' + (r.aan ? ' aan' : '') + '" aria-label="' + ontsnap(b.naam) + ' on or off"></button>' +
-    '</div>';
+    '</div>' + bewerkHtml(b, 'inkomen');
   }).join('');
   $('inkomstensom').textContent = pond(c.inkomenSom);
 }
@@ -642,8 +745,58 @@ function wisselMaand(stappen){
 /* --- budget- en inkomstenrijen (gedelegeerd, want ze worden hertekend) --- */
 function rijBediening(houderId, soort){
   var houder = $(houderId);
+  function lijst(){ return soort === 'budget' ? st.categorieen : st.bronnen; }
+  function itemVanVak(el){
+    var vak = el.closest('.rijbewerk');
+    return vak ? zoekOp(lijst(), vak.dataset.bewerk) : null;
+  }
 
   houder.addEventListener('click', function(e){
+    /* Het gekleurde blokje én de naam openen en sluiten het bewerkvak.
+
+       De naam moet mee, want een gekleurd vierkantje met een icoontje leest
+       als versiering en niet als knop — wie zijn huur wil hernoemen tikt op
+       het woord "Rent". Deed die tik niets, dan is de conclusie al snel dat
+       hernoemen niet kan.
+
+       Het is met opzet een <button> en geen klikbare <div>: zo kom je er ook
+       met de tab-toets en zegt een schermlezer dat het iets doet. */
+    var blokje = e.target.closest('button.ic, button.naam');
+    if(blokje && houder.contains(blokje)){
+      var id = blokje.closest('[data-id]').dataset.id;
+      openBewerk = (openBewerk && openBewerk.soort === soort && openBewerk.id === id)
+        ? null : {soort:soort, id:id};
+      tekenAlles();
+      return;
+    }
+
+    var kleur = e.target.closest('.kleurknop');
+    if(kleur){
+      var kItem = itemVanVak(kleur);
+      if(kItem){
+        var k = PALET[+kleur.dataset.kleur];
+        /* Alle drie tegelijk: icoonvlak, icoon en balkje horen bij elkaar. */
+        kItem.zacht = k.zacht;
+        kItem.icoonkleur = k.icoonkleur;
+        if(soort === 'budget') kItem.balk = k.balk;
+        bewaar();
+        tekenAlles();
+      }
+      return;
+    }
+
+    var icoon = e.target.closest('.icoonknop');
+    if(icoon){
+      var iItem = itemVanVak(icoon);
+      if(iItem){ iItem.icoon = icoon.dataset.icoon; bewaar(); tekenAlles(); }
+      return;
+    }
+
+    if(e.target.closest('.rijklaar')){ openBewerk = null; tekenAlles(); return; }
+
+    var weg = e.target.closest('.rijweg');
+    if(weg){ verwijderRij(soort, weg.closest('.rijbewerk').dataset.bewerk); return; }
+
     var knop = e.target.closest('.schakel');
     if(!knop || !houder.contains(knop)) return;
     var rij = knop.closest('[data-id]');
@@ -658,12 +811,102 @@ function rijBediening(houderId, soort){
      de cursor uit het veld gooien waar je in bezig bent. */
   houder.addEventListener('input', function(e){
     if(e.target.tagName !== 'INPUT' || e.target.readOnly) return;
+
+    /* Hernoemen. De naam hoort bij de post zelf en niet bij deze maand, dus
+       hij gaat naar `st` en niet naar het maandvak. De rij erboven werken we
+       met de hand bij: hertekenen zou de cursor uit het naamveld gooien. */
+    if(e.target.classList.contains('hernoem')){
+      var hItem = itemVanVak(e.target);
+      if(!hItem) return;
+      hItem.naam = e.target.value;
+      bewaar();
+      var naamEl = houder.querySelector('[data-id="' + hItem.id + '"] .naam');
+      if(naamEl) naamEl.textContent = hItem.naam;
+      if(soort === 'budget') vulCategorieKeuze();
+      werkTotalenBij();
+      return;
+    }
+    if(e.target.closest('.rijbewerk')) return;   /* de maandbedragen hieronder */
+
     var rij = e.target.closest('[data-id]');
     var vak = maandVak(gekozenMaand, soort);
     vak.bedrag[rij.dataset.id] = naarGetal(e.target.value);
     bewaar();
     merkRijAan(rij, soort);
     werkTotalenBij();
+  });
+
+  /* De looptijd is een maandkiezer: die mag pas iets doen als je klaar bent,
+     anders slaat hij halve jaartallen op terwijl je nog typt. */
+  houder.addEventListener('change', function(e){
+    if(!e.target.classList.contains('vanaf') && !e.target.classList.contains('totmet')) return;
+    var item = itemVanVak(e.target);
+    if(!item) return;
+    item[e.target.classList.contains('vanaf') ? 'van' : 'tot'] = e.target.value || null;
+    bewaar();
+    tekenAlles();
+  });
+}
+
+/* Een post weghalen. Het lastige zit niet in het verwijderen maar in wat
+   eraan vastzit: de maandafwijkingen, en bij een categorie de uitgaven die
+   erop geboekt staan. Die uitgaven gooien we niet weg — je hebt dat geld wel
+   degelijk uitgegeven — maar verhuizen we naar de eerste post die overblijft.
+
+   Alles wat we losmaken bewaren we eerst, zodat "Undo" het echt terugzet en
+   niet een half hersteld budget oplevert. */
+function verwijderRij(soort, id){
+  var lijst = soort === 'budget' ? st.categorieen : st.bronnen;
+  var idx = -1;
+  lijst.forEach(function(x, i){ if(x.id === id) idx = i; });
+  if(idx < 0) return;
+  var item = lijst[idx];
+
+  if(item.afgeleid){ meld('Work cannot be deleted — that amount comes from your shifts'); return; }
+  var rest = lijst.filter(function(x){ return x.id !== id && !x.afgeleid; });
+  if(soort === 'budget' && !rest.length){
+    meld('At least one spending category has to stay');
+    return;
+  }
+
+  var bewaardeMaanden = {};
+  Object.keys(st.maanden).forEach(function(m){
+    var vak = st.maanden[m][soort];
+    if(!vak) return;
+    var b = {};
+    if(vak.bedrag && vak.bedrag[id] !== undefined){ b.bedrag = vak.bedrag[id]; delete vak.bedrag[id]; }
+    if(vak.stand  && vak.stand[id]  !== undefined){ b.stand  = vak.stand[id];  delete vak.stand[id]; }
+    if(b.bedrag !== undefined || b.stand !== undefined) bewaardeMaanden[m] = b;
+  });
+
+  var verhuisd = [];
+  if(soort === 'budget'){
+    st.uitgaven.forEach(function(u){
+      if(u.cat === id){ verhuisd.push(u.id); u.cat = rest[0].id; }
+    });
+  }
+
+  lijst.splice(idx, 1);
+  openBewerk = null;
+  bewaar();
+  tekenAlles();
+
+  var staart = verhuisd.length
+    ? ' — ' + verhuisd.length + (verhuisd.length === 1 ? ' expense is' : ' expenses are') +
+      ' now under ' + ontsnap(rest[0].naam)
+    : '';
+  meld('<b>' + ontsnap(item.naam) + '</b> deleted' + staart, function(){
+    lijst.splice(idx, 0, item);
+    Object.keys(bewaardeMaanden).forEach(function(m){
+      var vak = maandVak(m, soort);
+      if(bewaardeMaanden[m].bedrag !== undefined) vak.bedrag[id] = bewaardeMaanden[m].bedrag;
+      if(bewaardeMaanden[m].stand  !== undefined) vak.stand[id]  = bewaardeMaanden[m].stand;
+    });
+    var terug = {};
+    verhuisd.forEach(function(x){ terug[x] = true; });
+    st.uitgaven.forEach(function(u){ if(terug[u.id]) u.cat = id; });
+    bewaar();
+    tekenAlles();
   });
 }
 
@@ -724,6 +967,9 @@ $('budgetopslaan').addEventListener('click', function(){
   } else {
     meld('Saved for ' + maandNaam(gekozenMaand));
   }
+  /* Het blok klapt dicht, dus een openstaand bewerkvak moet mee: anders
+     staat het straks weer open zonder dat je erom vroeg. */
+  openBewerk = null;
   bewaar();
   $('budgetblok').open = false;
   tekenAlles();
@@ -737,6 +983,7 @@ $('inkomstenopslaan').addEventListener('click', function(){
   } else {
     meld('Saved for ' + maandNaam(gekozenMaand));
   }
+  openBewerk = null;
   bewaar();
   $('inkomstenblok').open = false;
   tekenAlles();
@@ -791,8 +1038,8 @@ nieuwrijBediening({
   klaar:'nieuwecategorieklaar', af:'nieuwecategorieaf',
   velden:['nieuwecategorienaam', 'nieuwecategoriebedrag'],
   maak:function(naam, bedrag){
-    var kleur = PALET[st.categorieen.length % PALET.length];
-    st.categorieen.push({id:'c' + nieuwId(), naam:naam, icoon:kleur.icoon, zacht:kleur.zacht,
+    var kleur = vrijeKleur(st.categorieen);
+    st.categorieen.push({id:'c' + nieuwId(), naam:naam, icoon:STANDAARDICOON, zacht:kleur.zacht,
                          icoonkleur:kleur.icoonkleur, balk:kleur.balk, bedrag:bedrag});
   }
 });
@@ -812,8 +1059,8 @@ nieuwrijBediening({
   klaar:'nieuwebronklaar', af:'nieuwebronaf',
   velden:['nieuwebronnaam', 'nieuwebronbedrag'],
   maak:function(naam, bedrag){
-    var kleur = PALET[st.bronnen.length % PALET.length];
-    st.bronnen.push({id:'b' + nieuwId(), naam:naam, icoon:kleur.icoon, zacht:kleur.zacht,
+    var kleur = vrijeKleur(st.bronnen);
+    st.bronnen.push({id:'b' + nieuwId(), naam:naam, icoon:STANDAARDICOON, zacht:kleur.zacht,
                      icoonkleur:kleur.icoonkleur, valuta:nieuweMunt,
                      bedrag:bedrag, van:null, tot:null});
   }
@@ -1083,6 +1330,7 @@ $('wisknop').addEventListener('click', function(){
   st = verseStaat();
   gekozenMaand = maandSleutel(new Date());
   gekozenDag = null;
+  openBewerk = null;
   stopBewerken();
   bewaar();
   vulCategorieKeuze();
